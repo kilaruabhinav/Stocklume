@@ -1,0 +1,24 @@
+.compare-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.compare-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.compare-error {
+  color: var(--color-danger-strong);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px 14px;
+}

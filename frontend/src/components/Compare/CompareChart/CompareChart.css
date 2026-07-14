@@ -1,0 +1,114 @@
+.compare-chart-card {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 14px 16px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-medium);
+}
+
+.compare-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.compare-chart-header h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.compare-chart-header p {
+  margin: 3px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.compare-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.compare-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.compare-chart {
+  width: 100%;
+  height: 380px;
+  min-width: 0;
+}
+
+.compare-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  border: 1px dashed var(--color-card-border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.compare-tooltip {
+  min-width: 140px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: var(--color-chart-tooltip-background);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-large);
+}
+
+.compare-tooltip__date {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.compare-tooltip__value {
+  margin: 5px 0 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .compare-chart-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compare-legend {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .compare-chart-card {
+    padding: 14px;
+  }
+
+  .compare-chart {
+    height: 310px;
+  }
+}

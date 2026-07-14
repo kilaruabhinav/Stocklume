@@ -1,0 +1,237 @@
+.stock-chart-card {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  padding: 20px 20px 12px;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-medium);
+}
+
+.stock-chart-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
+.stock-chart-toolbar-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stock-chart-toolbar-note {
+  margin: 5px 0 0;
+  color: var(--color-text-subtle);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.stock-chart-overlay-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 4px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 8px;
+}
+
+.stock-chart-overlay-btn {
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 7px 10px;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.stock-chart-overlay-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-control-hover);
+}
+
+.stock-chart-overlay-btn.is-active {
+  color: var(--color-control-selected-text);
+  background: var(--color-control-selected-background);
+  box-shadow: var(--shadow-small);
+}
+
+/*
+  ResponsiveContainer requires its parent to have
+  a real, non-zero height.
+*/
+.stock-chart-graph {
+  width: 100%;
+  min-width: 0;
+  height: 300px;
+}
+
+/*
+  Do not use overflow: hidden here because it can
+  crop axis labels and Recharts tooltips.
+*/
+.stock-chart-graph .recharts-wrapper {
+  overflow: visible;
+}
+
+.stock-chart-graph .recharts-surface {
+  overflow: visible;
+}
+
+.stock-chart-state {
+  width: 100%;
+  height: 400px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  color: var(--color-text-muted);
+
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+}
+
+.stock-chart-empty {
+  border: 2px dashed var(--color-card-border);
+}
+
+.stock-chart-error {
+  color: var(--color-danger-strong);
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+}
+
+.stock-chart-state-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.stock-chart-state-message {
+  max-width: 360px;
+  margin: 7px 0 0;
+
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.stock-chart-error .stock-chart-state-message {
+  color: var(--color-danger);
+}
+
+.stock-chart-spinner {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 12px;
+
+  border: 3px solid var(--color-accent-soft);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+
+  animation: stock-chart-spin 0.8s linear infinite;
+}
+
+@keyframes stock-chart-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.stock-chart-tooltip {
+  min-width: 115px;
+  box-sizing: border-box;
+
+  padding: 10px 14px;
+
+  background: var(--color-chart-tooltip-background);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+
+  box-shadow: var(--shadow-large);
+  backdrop-filter: blur(8px);
+}
+
+.stock-chart-tooltip-date {
+  margin: 0;
+
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.stock-chart-tooltip-price {
+  margin: 4px 0 0;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stock-chart-tooltip-indicator {
+  margin: 5px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .stock-chart-card {
+    padding: 14px 10px 10px;
+  }
+
+  .stock-chart-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stock-chart-overlay-controls {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .stock-chart-overlay-btn {
+    flex: 1;
+  }
+
+  .stock-chart-graph,
+  .stock-chart-state {
+    height: 300px;
+  }
+
+  .stock-chart-graph .recharts-cartesian-axis-tick-value {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .stock-chart-card {
+    padding: 12px 6px 8px;
+  }
+
+  .stock-chart-graph,
+  .stock-chart-state {
+    height: 270px;
+  }
+}

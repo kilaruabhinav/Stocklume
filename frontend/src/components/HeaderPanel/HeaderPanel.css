@@ -1,0 +1,174 @@
+.header-panel {
+  --font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-background);
+  padding: 0 40px;
+  height: 64px;
+  border-bottom: 1px solid var(--color-navigation-border);
+  font-family: var(--font-family);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Left Section: Brand Logo */
+.header-left {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.logo-text {
+  font-size: 1.6rem; /* Enhanced brand presence */
+  font-weight: 800;  /* Bolder weight for better contrast */
+  color: var(--color-brand);
+  letter-spacing: -0.75px; /* Tighter spacing for a modern premium look */
+}
+
+.logo-accent {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Right Section: Navigation Links */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  height: 100%;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 1.05rem; /* Slightly larger text size */
+  font-weight: 500;
+  height: 100%;
+  line-height: 1; 
+  position: relative; /* Context for the absolute underline positioning */
+  transition: color 0.2s ease;
+}
+
+.nav-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-navigation-border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  font-weight: 700;
+  min-height: 34px;
+  padding: 0 12px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.nav-logout-btn:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+}
+
+.nav-logout-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-danger-focus);
+}
+
+/* Uniform Left-to-Right Underline Animation Setup */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 14px; /* Positions the line neatly under the text box */
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-brand-hover);
+  transform: scaleX(0); /* Hidden initially */
+  transform-origin: bottom left; /* Forces animation to start from the uniform left side */
+  transition: transform 0.25s ease-out;
+}
+
+.nav-link:hover {
+  color: var(--color-brand-hover);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1); /* Expands out uniformly to full width on hover */
+}
+
+/* Active Link State */
+.nav-link.active {
+  color: var(--color-brand);
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  background-color: var(--color-brand);
+  transform: scaleX(1); /* Keeps underline static on the current page */
+}
+
+@media (max-width: 760px) {
+  .header-panel {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    height: auto;
+    padding: 14px 16px 10px;
+  }
+
+  .header-left {
+    height: auto;
+  }
+
+  .logo-text {
+    font-size: 1.35rem;
+    letter-spacing: 0;
+  }
+
+  .header-nav {
+    width: 100%;
+    height: auto;
+    gap: 18px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .header-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 28px;
+    font-size: 0.94rem;
+  }
+
+  .nav-link::after {
+    bottom: 0;
+  }
+
+  .nav-logout-btn {
+    flex: 0 0 auto;
+  }
+
+}

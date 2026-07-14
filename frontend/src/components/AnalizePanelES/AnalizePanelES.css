@@ -1,0 +1,51 @@
+.analysis-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+  padding: 48px;
+  margin-top: 40px;
+}
+
+.empty-state-icon {
+  color: var(--color-text-subtle); /* Muted tech grey */
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  padding: 16px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-small);
+}
+
+.analysis-empty-state h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary); /* Premium dark slate */
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.analysis-empty-state p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-text-muted); /* Clean descriptive text body */
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Temp placeholder block style for when a stock is active */
+.chart-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}

@@ -1,0 +1,571 @@
+.company-details-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 24px;
+  overscroll-behavior: none;
+}
+
+.company-details-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--color-modal-backdrop);
+  border: 0;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.company-details-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(940px, 100%);
+  max-height: min(82vh, 780px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+  box-sizing: border-box;
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-modal-border);
+  border-radius: 22px;
+  clip-path: inset(0 round 22px);
+  box-shadow: var(--shadow-modal);
+}
+
+.company-details-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.company-details-modal__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.company-details-modal__logo {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  background: var(--color-surface-subtle);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--color-card-border);
+}
+
+.company-details-modal__logo--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.company-details-modal__ticker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.company-details-modal__header h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.company-details-modal__close {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.company-details-modal__close:hover {
+  color: var(--color-text-primary);
+  background: var(--color-button-secondary-hover);
+  transform: translateY(-1px);
+}
+
+.company-details-modal__close:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.company-details-modal__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.company-details-modal__summary div {
+  min-width: 0;
+  padding: 11px 12px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 16px;
+}
+
+.company-details-modal__summary span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.company-details-modal__summary strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-text-primary);
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-details-modal__state {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.company-details-modal__state--error {
+  color: var(--color-danger);
+}
+
+.company-details-modal__state--loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 12px;
+}
+
+.company-details-modal__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: company-details-spin 0.7s linear infinite;
+}
+
+.company-details-modal__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.company-details-modal__shimmer {
+  display: inline-block;
+  max-width: 100%;
+  height: 0.9em;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent, var(--color-surface-elevated), transparent),
+    var(--color-skeleton);
+  background-size: 180% 100%;
+  border-radius: 999px;
+  vertical-align: middle;
+  animation: company-details-shimmer 1.25s ease-in-out infinite;
+}
+
+.company-details-modal__shimmer--summary {
+  width: 100%;
+  height: 0.92rem;
+}
+
+.company-details-modal__shimmer--value {
+  width: min(150px, 72%);
+  height: 0.8rem;
+}
+
+.company-details-modal__shimmer--chart-value {
+  width: 86px;
+  height: 0.82rem;
+}
+
+.company-details-modal__shimmer--w1 {
+  width: 72%;
+}
+
+.company-details-modal__shimmer--w2 {
+  width: 84%;
+}
+
+.company-details-modal__shimmer--w3 {
+  width: 44%;
+}
+
+.company-details-modal__shimmer--w4 {
+  width: 92%;
+}
+
+.company-details-modal__shimmer--row1 {
+  width: min(120px, 64%);
+}
+
+.company-details-modal__shimmer--row2 {
+  width: min(180px, 78%);
+}
+
+.company-details-modal__shimmer--row3 {
+  width: min(92px, 54%);
+}
+
+.company-details-modal__shimmer--cell0 {
+  width: 70%;
+}
+
+.company-details-modal__shimmer--cell1 {
+  width: 56%;
+}
+
+.company-details-modal__shimmer--cell2 {
+  width: 82%;
+}
+
+.company-details-modal__table-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--color-card-border);
+}
+
+.company-details-modal__table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  color: var(--color-text-primary);
+  font-size: 0.84rem;
+}
+
+.company-details-modal__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 12px 14px;
+  background: var(--color-accent-soft);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.company-details-modal__table td {
+  padding: 11px 14px;
+  border-top: 1px solid var(--color-divider);
+  line-height: 1.25;
+  transition: background-color 0.07s ease, color 0.07s ease;
+}
+
+.company-details-modal__table tbody tr:not(.company-details-modal__section-row):hover td {
+  background: var(--color-row-hover);
+}
+
+.company-details-modal__table td:first-child {
+  width: 58%;
+  color: var(--color-text-secondary);
+  font-weight: 750;
+}
+
+.company-details-modal__table td:last-child {
+  color: var(--color-text-primary);
+  font-weight: 850;
+}
+
+.company-details-modal__table--wide {
+  min-width: 860px;
+  font-size: 0.8rem;
+}
+
+.company-details-modal__table--wide th:not(:first-child),
+.company-details-modal__table--wide td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.company-details-modal__table--wide td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-surface);
+}
+
+.company-details-modal__table--wide tbody tr:not(.company-details-modal__section-row):hover td:first-child {
+  background: var(--color-row-hover);
+}
+
+.company-details-modal__table--wide th:first-child {
+  left: 0;
+  z-index: 2;
+}
+
+.company-details-modal__section-row td {
+  padding: 13px 14px 8px;
+  background: var(--color-surface-subtle);
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.company-details-modal__statement {
+  margin-top: 16px;
+}
+
+.company-details-modal__statement-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.company-details-modal__statement-header span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.company-details-modal__statement-header strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.company-details-modal__statement-header p {
+  max-width: 320px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.company-details-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.company-details-chart {
+  min-width: 0;
+  padding: 12px;
+  background: var(--color-surface-subtle);
+  border-radius: 16px;
+}
+
+.company-details-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.company-details-chart__header span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.company-details-chart__header strong {
+  color: var(--color-text-primary);
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.company-details-chart__canvas {
+  width: 100%;
+  height: 170px;
+}
+
+.company-details-chart__canvas--loading {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(18px, 1fr));
+  align-items: end;
+  gap: 10px;
+  padding: 10px 6px 4px;
+  border-top: 1px dashed var(--color-divider);
+  box-sizing: border-box;
+}
+
+.company-details-modal__chart-bar {
+  display: block;
+  min-height: 36px;
+  background:
+    linear-gradient(90deg, transparent, var(--color-surface-elevated), transparent),
+    var(--color-skeleton);
+  background-size: 180% 100%;
+  border: 1px solid var(--color-card-border);
+  border-radius: 7px 7px 3px 3px;
+  animation: company-details-shimmer 1.25s ease-in-out infinite;
+}
+
+.company-details-modal__chart-bar--one {
+  height: 42%;
+}
+
+.company-details-modal__chart-bar--two {
+  height: 68%;
+  animation-delay: 0.12s;
+}
+
+.company-details-modal__chart-bar--three {
+  height: 54%;
+  animation-delay: 0.24s;
+}
+
+.company-details-modal__chart-bar--four {
+  height: 82%;
+  animation-delay: 0.36s;
+}
+
+.company-details-chart-tooltip {
+  padding: 8px 9px;
+  background: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-large);
+}
+
+.company-details-chart-tooltip span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.company-details-chart-tooltip strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-text-primary);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.company-details-modal__website {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  margin-top: 14px;
+  color: var(--color-accent);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.company-details-modal__website:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+@keyframes company-details-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes company-details-shimmer {
+  0%,
+  100% {
+    background-position: 120% 0;
+  }
+
+  50% {
+    background-position: -80% 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .company-details-modal {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .company-details-modal__panel {
+    max-height: calc(100vh - 24px);
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .company-details-modal__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .company-details-modal__statement-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .company-details-modal__statement-header p {
+    max-width: none;
+    text-align: left;
+  }
+
+  .company-details-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .company-details-modal__header {
+    align-items: flex-start;
+  }
+
+  .company-details-modal__summary {
+    grid-template-columns: 1fr;
+  }
+
+}

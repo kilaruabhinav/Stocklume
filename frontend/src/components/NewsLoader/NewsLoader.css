@@ -1,0 +1,75 @@
+/* Skeleton Card container setup mirroring active layout */
+.news-skeleton-card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Matching card image dimensions framework */
+.news-skeleton-thumbnail {
+  width: 90px;
+  min-width: 90px;
+  height: 90px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Copy layout structure text panel tracking */
+.news-skeleton-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+/* Individual typographical blocks mapping heights */
+.news-skeleton-meta {
+  width: 90px;
+  height: 10px;
+  border-radius: 4px;
+}
+
+.news-skeleton-title {
+  width: 85%;
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.news-skeleton-line {
+  width: 100%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.news-skeleton-line.short {
+  width: 60%;
+}
+
+.news-shimmer {
+  background: var(--color-skeleton);
+  animation: news-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes news-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.text-unselectable {
+  pointer-events: none;
+  user-select: none;
+}

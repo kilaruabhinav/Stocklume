@@ -1,0 +1,126 @@
+.watchlist-scroll-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 1 auto;
+  height: fit-content;
+  max-height: none;
+  min-height: 0;
+  overflow-y: visible;
+  padding: 2px 4px 2px 1px;
+  scroll-padding: 8px;
+}
+
+.watchlist-scroll-container--scrollable,
+.watchlist-scroll-container--loading {
+  max-height: clamp(220px, calc(100vh - 360px), 430px);
+  overflow-y: auto;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-strong);
+  border-radius: 10px;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-subtle);
+}
+
+.stock-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 180px;
+  padding: 22px 18px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  border: 1px dashed var(--color-card-border);
+  border-radius: 12px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.watchlist-skeleton {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  animation: skeleton-pulse 1.15s ease-in-out infinite;
+}
+
+.watchlist-skeleton span {
+  display: block;
+  height: 10px;
+  background: var(--color-skeleton);
+  border-radius: 999px;
+}
+
+.watchlist-skeleton__ticker {
+  width: 42px;
+}
+
+.watchlist-skeleton__name {
+  width: 100%;
+}
+
+.watchlist-skeleton__price {
+  width: 56px;
+  justify-self: end;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.stock-empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--color-success-strong);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  border-radius: 10px;
+  font-size: 1.4rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.stock-empty-state__text {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.stock-empty-state__hint {
+  max-width: 220px;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}

@@ -1,0 +1,131 @@
+/* ========================================== */
+/* START: MAIN CONTENT HEADER STYLES          */
+/* ========================================== */
+
+/* Main Header Wrapper Box */
+.main-content__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 0 14px 0;
+  border-bottom: 1px solid var(--color-divider); /* Soft separation under header area */
+  margin-bottom: 8px;
+}
+
+/* Grouping container for typography stacked content */
+.header-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Subtle tracker description text above title */
+.header-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted); /* Slate-500 */
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Highlight dynamic company name */
+.header-main-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.72rem;
+  font-weight: 700;
+  color: var(--color-text-primary); /* Slate-900 premium dark value */
+  margin: 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+/* Action frame sitting side-by-side on desktop viewports */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Container to stack label directly ABOVE the button track */
+.timeframe-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Right-aligns the text and button track together */
+  gap: 6px;
+}
+
+/* Timeframe label styling */
+.timeframe-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted); /* Slate-500 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Styling wrapper for dynamic placeholder elements track */
+.timeframe-placeholders {
+  display: flex;
+  gap: 8px;
+  background-color: var(--color-surface-subtle); /* Slate-50 frame */
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--color-panel-border);
+}
+
+/* Individual Timeframe Buttons */
+.timeframe-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted); /* Slate-500 */
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover style for unselected buttons */
+.timeframe-btn:hover {
+  color: var(--color-text-primary); /* Slate-900 */
+  background-color: var(--color-control-hover); /* Slate-100 */
+}
+
+/* Selected active button style */
+.timeframe-btn.active {
+  color: var(--color-control-selected-text);
+  background-color: var(--color-control-selected-background); /* Premium active background */
+  box-shadow: var(--shadow-small);
+}
+
+/* Responsive adjustment layer for mobile views */
+@media (max-width: 640px) {
+  .main-content__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+
+  .timeframe-wrapper {
+    width: 100%;
+    align-items: flex-start; /* Left-align labels on small mobile views */
+  }
+
+  .timeframe-placeholders {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ========================================== */
+/* END: MAIN CONTENT HEADER STYLES            */
+/* ========================================== */

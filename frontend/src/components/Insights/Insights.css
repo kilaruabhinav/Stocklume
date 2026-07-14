@@ -1,0 +1,52 @@
+.insights-section {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--color-divider);
+  padding-bottom: 10px;
+}
+
+.insights-heading {
+  margin: 0;
+  color: var(--color-brand);
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.insights-timeframe {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 850;
+  line-height: 1;
+  padding: 5px 7px;
+}
+
+.insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insights-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 115px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  border: 1px dashed var(--color-card-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
