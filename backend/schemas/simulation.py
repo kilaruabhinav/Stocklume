@@ -6,5 +6,3 @@ from pydantic import BaseModel
 class TradeData(BaseModel):
     symbol: str
     quantity: Decimal
-    price: Decimal
-

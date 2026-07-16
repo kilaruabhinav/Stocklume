@@ -3,6 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from database import get_db_connection
 from schemas.simulation import TradeData
+from services.market_price_service import get_current_price
 from services.simulation_service import (
     buy_simulated_stock as buy_stock,
     ensure_simulation_account,
@@ -31,10 +32,7 @@ def validate_trade_data(data):
     if data.quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
 
-    if data.price <= 0:
-        raise HTTPException(status_code=400, detail="Price must be greater than 0")
-
-    return symbol, data.quantity, data.price
+    return symbol, data.quantity
 
 
 @router.get("/simulation/account")
@@ -106,7 +104,8 @@ def buy_simulated_stock(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
-    symbol, quantity, price = validate_trade_data(data)
+    symbol, quantity = validate_trade_data(data)
+    price = get_current_price(symbol)
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -137,7 +136,8 @@ def sell_simulated_stock(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
-    symbol, quantity, price = validate_trade_data(data)
+    symbol, quantity = validate_trade_data(data)
+    price = get_current_price(symbol)
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 

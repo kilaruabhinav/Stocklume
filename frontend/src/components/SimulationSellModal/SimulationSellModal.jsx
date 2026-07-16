@@ -67,14 +67,14 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
         }
 
         if (!Number.isFinite(latestPrice) || latestPrice <= 0) {
-          setError("Could not load current price. Please try again.");
+          setError("Could not load estimated price. Please try again.");
           return;
         }
 
         setPrice(latestPrice);
       } catch {
         if (isActive) {
-          setError("Could not load current price. Please try again.");
+          setError("Could not load estimated price. Please try again.");
         }
       } finally {
         if (isActive) {
@@ -121,7 +121,7 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
     }
 
     if (!hasValidPrice) {
-      setError("Could not load current price. Please try again.");
+      setError("Could not load estimated price. Please try again.");
       return;
     }
 
@@ -133,11 +133,10 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // TODO: Later move execution price lookup to the backend so users cannot manipulate trade prices from the browser.
+      // Backend determines the final execution price.
       await sellSimulationStock({
         symbol,
-        quantity: quantityNumber,
-        price
+        quantity: quantityNumber
       });
 
       await onSuccess?.({
@@ -184,7 +183,7 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
 
         <div className="simulation-sell-modal__summary">
           <div className="simulation-sell-modal__price">
-            <span>Current sell price</span>
+            <span>Estimated sell price</span>
             <strong>{priceLoading ? "Loading..." : formatCurrency(price)}</strong>
           </div>
           <div>
@@ -192,6 +191,10 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
             <strong>{estimatedValue === null ? "N/A" : formatCurrency(estimatedValue)}</strong>
           </div>
         </div>
+
+        <p className="simulation-sell-modal__note">
+          Final execution price is confirmed by backend.
+        </p>
 
         <label className="simulation-sell-modal__field">
           <span>Quantity</span>

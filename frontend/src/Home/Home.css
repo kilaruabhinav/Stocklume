@@ -266,13 +266,20 @@
   --workspace-accent: var(--color-success-strong);
   --workspace-card-bg: var(--color-surface-subtle);
   --workspace-card-border: var(--color-card-border);
-  height: 100%;
+  height: auto;
   padding: 8px 0 8px 16px;
   background: var(--workspace-bg);
   border-left: 1px solid var(--workspace-border);
   border-radius: 0;
   box-shadow: none;
   box-sizing: border-box;
+}
+
+.home-hero__visual {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .home-workspace-panel__header {

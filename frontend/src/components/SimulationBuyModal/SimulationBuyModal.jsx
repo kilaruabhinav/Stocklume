@@ -58,7 +58,7 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
     }
 
     if (!hasValidPrice) {
-      setError("Current price is unavailable. Refresh the stock quote and try again.");
+      setError("Estimated price is unavailable. Refresh the stock quote and try again.");
       return;
     }
 
@@ -70,11 +70,10 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // TODO: Later move execution price lookup to the backend so users cannot manipulate trade prices from the browser.
+      // Backend determines the final execution price.
       await buySimulationStock({
         symbol,
-        quantity: quantityNumber,
-        price
+        quantity: quantityNumber
       });
 
       onSuccess?.({
@@ -121,7 +120,7 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
 
         <div className="simulation-buy-modal__summary">
           <div>
-            <span>Current price</span>
+            <span>Estimated price</span>
             <strong>{formatCurrency(price)}</strong>
           </div>
           <div>
@@ -129,6 +128,10 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
             <strong>{estimatedCost === null ? "N/A" : formatCurrency(estimatedCost)}</strong>
           </div>
         </div>
+
+        <p className="simulation-buy-modal__note">
+          Final execution price is confirmed by backend.
+        </p>
 
         <label className="simulation-buy-modal__field">
           <span>Quantity</span>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import SimulationSnapshot from "../SimulationSnapshot/SimulationSnapshot";
 
 const MARKET_TIME_ZONE = "America/New_York";
 const MARKET_OPEN_MINUTES = 9 * 60 + 30;
@@ -308,6 +309,8 @@ function HomeHero() {
             </div>
           </div>
         </div>
+
+        <SimulationSnapshot />
       </div>
     </section>
   );

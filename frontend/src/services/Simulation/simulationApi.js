@@ -1,7 +1,8 @@
 import { buildApiUrl } from "../apiConfig";
+import { getAccessToken, logoutUser } from "../Auth/authStorage";
 
 function getAuthHeaders() {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
 
   if (!token) {
     throw new Error("You must be logged in");
@@ -22,6 +23,10 @@ async function handleApiResponse(response) {
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      logoutUser();
+    }
+
     throw new Error(data?.detail || data?.message || "Request failed");
   }
 
@@ -55,7 +60,7 @@ export async function getSimulationTrades() {
   return handleApiResponse(response);
 }
 
-export async function buySimulationStock({ symbol, quantity, price }) {
+export async function buySimulationStock({ symbol, quantity }) {
   const response = await fetch(buildApiUrl("/simulation/buy"), {
     method: "POST",
     headers: {
@@ -64,15 +69,14 @@ export async function buySimulationStock({ symbol, quantity, price }) {
     },
     body: JSON.stringify({
       symbol,
-      quantity,
-      price
+      quantity
     })
   });
 
   return handleApiResponse(response);
 }
 
-export async function sellSimulationStock({ symbol, quantity, price }) {
+export async function sellSimulationStock({ symbol, quantity }) {
   const response = await fetch(buildApiUrl("/simulation/sell"), {
     method: "POST",
     headers: {
@@ -81,8 +85,7 @@ export async function sellSimulationStock({ symbol, quantity, price }) {
     },
     body: JSON.stringify({
       symbol,
-      quantity,
-      price
+      quantity
     })
   });
 
