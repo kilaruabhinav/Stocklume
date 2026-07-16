@@ -1,8 +1,11 @@
+import { getOrSetCachedData } from "../cache/apiCache";
+
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY;
 const ALPHA_VANTAGE_API_KEY = import.meta.env.VITE_VINTAGEALPHA_API_KEY;
 
 const FMP_BASE_URL = "https://financialmodelingprep.com/stable";
 const ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query";
+const FINANCIAL_DETAILS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function getFiniteNumber(value) {
   if (value === null || value === undefined || value === "" || value === "None") {
@@ -152,6 +155,15 @@ function mergeStatements(primaryReports, fallbackReports) {
     .reverse();
 }
 
+function hasFinancialDetails(data) {
+  return Boolean(
+    data?.profile ||
+    data?.keyMetrics ||
+    data?.ttmIncomeStatement ||
+    data?.incomeStatements?.length
+  );
+}
+
 async function getFmpFinancials(ticker) {
   if (!FMP_API_KEY) {
     return { profile: null, keyMetrics: null, incomeStatements: [] };
@@ -198,22 +210,35 @@ async function getAlphaVantageFinancials(ticker) {
 }
 
 export async function getFinancialDetails(ticker) {
-  const [fmpResult, alphaResult] = await Promise.allSettled([
-    getFmpFinancials(ticker),
-    getAlphaVantageFinancials(ticker)
-  ]);
+  const normalizedTicker = ticker.trim().toUpperCase();
+  const cacheKey = `financialDetails:${normalizedTicker}`;
 
-  const fmp = fmpResult.status === "fulfilled"
-    ? fmpResult.value
-    : { profile: null, keyMetrics: null, incomeStatements: [] };
-  const alpha = alphaResult.status === "fulfilled"
-    ? alphaResult.value
-    : { incomeStatements: [], ttmIncomeStatement: null };
+  return getOrSetCachedData(
+    cacheKey,
+    async () => {
+      const [fmpResult, alphaResult] = await Promise.allSettled([
+        getFmpFinancials(normalizedTicker),
+        getAlphaVantageFinancials(normalizedTicker)
+      ]);
 
-  return {
-    profile: fmp.profile,
-    keyMetrics: fmp.keyMetrics,
-    incomeStatements: mergeStatements(fmp.incomeStatements, alpha.incomeStatements),
-    ttmIncomeStatement: alpha.ttmIncomeStatement
-  };
+      const fmp = fmpResult.status === "fulfilled"
+        ? fmpResult.value
+        : { profile: null, keyMetrics: null, incomeStatements: [] };
+      const alpha = alphaResult.status === "fulfilled"
+        ? alphaResult.value
+        : { incomeStatements: [], ttmIncomeStatement: null };
+
+      return {
+        profile: fmp.profile,
+        keyMetrics: fmp.keyMetrics,
+        incomeStatements: mergeStatements(fmp.incomeStatements, alpha.incomeStatements),
+        ttmIncomeStatement: alpha.ttmIncomeStatement
+      };
+    },
+    FINANCIAL_DETAILS_CACHE_TTL_MS,
+    {
+      // Financial statements and metrics are slow-moving; cache only non-empty successful results.
+      shouldCache: hasFinancialDetails
+    }
+  );
 }

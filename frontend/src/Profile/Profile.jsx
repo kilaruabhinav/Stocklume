@@ -1,80 +1,37 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  addAuthChangeListener,
-  getStoredUser,
-  logoutUser,
-  storeUser
-} from "../services/Auth/authStorage";
-import { getProfile } from "../services/profileApi";
-import ProfileOverview from "./components/ProfileOverview/ProfileOverview";
-import ProfileSession from "./components/ProfileSession/ProfileSession";
-import ThemeToggle from "../components/ThemeToggle/ThemeToggle";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/Auth/authStorage";
+import AccountActions from "./components/AccountActions/AccountActions";
+import ProfileAccountHeader from "./components/ProfileAccountHeader/ProfileAccountHeader";
+import RecentActivity from "./components/RecentActivity/RecentActivity";
+import SimulationSummary from "./components/SimulationSummary/SimulationSummary";
+import WatchlistSummary from "./components/WatchlistSummary/WatchlistSummary";
+import { useProfileDashboard } from "./hooks/useProfileDashboard";
 import "./Profile.css";
 
 function Profile({ theme, onThemeToggle }) {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    user,
+    profileLoading,
+    profileError,
+    simulationState,
+    simulationSummary,
+    watchlistState
+  } = useProfileDashboard();
 
   useEffect(() => {
-    return addAuthChangeListener(() => {
-      setUser(getStoredUser());
-    });
-  }, []);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadProfile() {
-      setLoading(true);
-
-      try {
-        const profileData = await getProfile();
-        const backendUser = profileData?.user;
-
-        if (!backendUser) {
-          throw new Error("Profile response was missing user details.");
-        }
-
-        const cachedUser = getStoredUser();
-        const verifiedUser = {
-          ...cachedUser,
-          ...backendUser,
-          loggedInAt: cachedUser?.loggedInAt || new Date().toISOString()
-        };
-
-        storeUser(verifiedUser);
-
-        if (isActive) {
-          setUser(verifiedUser);
-        }
-      } catch (error) {
-        console.error("Profile verification failed:", error);
-        logoutUser();
-        navigate("/login?reason=session-expired", { replace: true });
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
-      }
+    if (profileError) {
+      navigate("/login?reason=session-expired", { replace: true });
     }
-
-    queueMicrotask(() => {
-      loadProfile();
-    });
-
-    return () => {
-      isActive = false;
-    };
-  }, [navigate]);
+  }, [navigate, profileError]);
 
   const handleLogout = () => {
     logoutUser();
     navigate("/login", { replace: true });
   };
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <main className="profile-page">
         <section className="profile-state" aria-live="polite">
@@ -84,7 +41,7 @@ function Profile({ theme, onThemeToggle }) {
     );
   }
 
-  if (!user) {
+  if (!user || profileError) {
     return (
       <main className="profile-page">
         <section className="profile-state profile-state--error">
@@ -96,30 +53,29 @@ function Profile({ theme, onThemeToggle }) {
 
   return (
     <main className="profile-page">
-      <section className="profile-header">
-        <div>
-          <span className="profile-eyebrow">Signed In</span>
-          <h1>Your Profile</h1>
-          <p>Temporary account details for the current Stocklume session.</p>
-        </div>
+      <ProfileAccountHeader
+        onThemeToggle={onThemeToggle}
+        theme={theme}
+        user={user}
+      />
 
-        <div className="profile-header__actions">
-          <div className="profile-theme-control">
-            <span>Dark mode</span>
-            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
-          </div>
-          <Link className="profile-btn profile-btn--primary" to="/dashboard">
-            Open Dashboard
-          </Link>
-          <button className="profile-btn profile-btn--danger" type="button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </section>
-
-      <div className="profile-grid">
-        <ProfileOverview user={user} />
-        <ProfileSession user={user} />
+      <div className="profile-dashboard-grid">
+        <SimulationSummary
+          error={simulationState.error}
+          loading={simulationState.loading}
+          summary={simulationSummary}
+        />
+        <WatchlistSummary
+          error={watchlistState.error}
+          items={watchlistState.items}
+          loading={watchlistState.loading}
+        />
+        <RecentActivity
+          error={simulationState.error}
+          loading={simulationState.loading}
+          trades={simulationState.trades}
+        />
+        <AccountActions onLogout={handleLogout} />
       </div>
     </main>
   );

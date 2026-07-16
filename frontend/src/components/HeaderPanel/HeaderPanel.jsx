@@ -5,7 +5,33 @@ import {
   addAuthChangeListener,
   getStoredUser
 } from '../../services/Auth/authStorage';
+import {
+  loadCompare,
+  loadDashboard,
+  loadPortfolio,
+  loadProfile
+} from '../../routes/routeLoaders';
 import './HeaderPanel.css';
+
+const preloadByPath = {
+  "/dashboard": loadDashboard,
+  "/compare": loadCompare,
+  "/portfolio": loadPortfolio,
+  "/profile": loadProfile
+};
+
+function getNavEvents(path) {
+  const preload = preloadByPath[path];
+
+  if (!preload) {
+    return {};
+  }
+
+  return {
+    onMouseEnter: preload,
+    onFocus: preload
+  };
+}
 
 const HeaderPanel = () => {
   const [user, setUser] = useState(() => getStoredUser());
@@ -29,18 +55,18 @@ const HeaderPanel = () => {
         <NavLink to="/" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
           Home
         </NavLink>
-        <NavLink to="/dashboard" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        <NavLink to="/dashboard" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} {...getNavEvents("/dashboard")}>
           Dashboard
         </NavLink>
-        <NavLink to="/compare" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        <NavLink to="/compare" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} {...getNavEvents("/compare")}>
           Compare
         </NavLink>
         {user ? (
           <>
-            <NavLink to="/portfolio" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+            <NavLink to="/portfolio" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} {...getNavEvents("/portfolio")}>
               Portfolio
             </NavLink>
-            <NavLink to="/profile" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+            <NavLink to="/profile" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} {...getNavEvents("/profile")}>
               Profile
             </NavLink>
             

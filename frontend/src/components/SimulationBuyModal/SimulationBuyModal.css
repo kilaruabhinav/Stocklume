@@ -97,6 +97,7 @@
 
 .simulation-buy-modal__close:focus-visible,
 .simulation-buy-modal__field input:focus-visible,
+.simulation-buy-modal__max-button:focus-visible,
 .simulation-buy-modal__button:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus);
@@ -115,6 +116,10 @@
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-card-border);
   border-radius: 12px;
+}
+
+.simulation-buy-modal__summary-card--wide {
+  grid-column: 1 / -1;
 }
 
 .simulation-buy-modal__summary span,
@@ -150,7 +155,15 @@
   gap: 8px;
 }
 
+.simulation-buy-modal__quantity-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .simulation-buy-modal__field input {
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
   box-sizing: border-box;
   color: var(--color-text-primary);
@@ -182,6 +195,37 @@
   cursor: wait;
 }
 
+.simulation-buy-modal__max-button {
+  flex: 0 0 auto;
+  min-width: 58px;
+  color: var(--color-accent);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 0 12px;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.simulation-buy-modal__max-button:hover:not(:disabled) {
+  color: var(--color-text-inverse);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.simulation-buy-modal__max-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
 .simulation-buy-modal__message {
   margin: 12px 0 0;
   font-size: 0.84rem;
@@ -191,6 +235,10 @@
 
 .simulation-buy-modal__message--error {
   color: var(--color-danger);
+}
+
+.simulation-buy-modal__message--muted {
+  color: var(--color-text-muted);
 }
 
 .simulation-buy-modal__actions {

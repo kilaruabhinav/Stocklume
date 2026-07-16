@@ -1,0 +1,113 @@
+.profile-dashboard-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.profile-dashboard-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-dashboard-card h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 0.98rem;
+  font-weight: 850;
+}
+
+.profile-dashboard-card__header > span {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.profile-stat {
+  min-width: 0;
+  padding: 8px 9px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+}
+
+.profile-stat span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.profile-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.profile-value--positive {
+  color: var(--color-success-strong) !important;
+}
+
+.profile-value--negative {
+  color: var(--color-danger) !important;
+}
+
+.profile-value--neutral {
+  color: var(--color-text-muted) !important;
+}
+
+.profile-card-message {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.profile-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  color: var(--color-text-primary);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  padding: 0 12px;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .profile-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.profile-action-link--primary {
+  color: var(--color-control-selected-text);
+  background: var(--color-control-selected-background);
+  border-color: var(--color-control-selected-background);
+}

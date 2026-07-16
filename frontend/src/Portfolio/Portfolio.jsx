@@ -118,10 +118,11 @@ function Portfolio() {
 
       <div className="portfolio-secondary-grid">
         <RecentTrades trades={trades} />
-        <PerformanceBreakdown holdings={enrichedHoldings} totals={totals} />
+        <div className="portfolio-secondary-side">
+          <PerformanceBreakdown holdings={enrichedHoldings} totals={totals} />
+          <SimulationSettings onResetClick={openResetModal} />
+        </div>
       </div>
-
-      <SimulationSettings onResetClick={openResetModal} />
 
       {selectedSellHolding && (
         <SimulationSellModal

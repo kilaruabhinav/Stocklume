@@ -1,0 +1,39 @@
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(280px, calc(100vh - 96px));
+  color: var(--color-text-secondary);
+  background: transparent;
+  box-sizing: border-box;
+  padding: 24px;
+}
+
+.page-loader__panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-small);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.page-loader__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: page-loader-spin 0.8s linear infinite;
+}
+
+@keyframes page-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

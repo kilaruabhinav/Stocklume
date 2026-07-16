@@ -7,7 +7,7 @@
 .compare-shell {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;

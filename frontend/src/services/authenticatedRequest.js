@@ -65,8 +65,8 @@ function getErrorMessage(status, data, fallbackMessage) {
     return "Backend unavailable. Check that the API server is running.";
   }
 
-  if (status === 401) {
-    return "Your session expired. Please log in again.";
+  if (status === 401 || status === 403) {
+    return "Session expired. Please log in again.";
   }
 
   return fallbackMessage;
@@ -78,7 +78,7 @@ export async function authenticatedRequest(url, options = {}) {
   if (!token) {
     logoutUser();
     redirectToLogin();
-    throw new AuthenticatedRequestError("Your session expired. Please log in again.", {
+    throw new AuthenticatedRequestError("Session expired. Please log in again.", {
       status: 401,
       isUnauthorized: true
     });
@@ -94,11 +94,11 @@ export async function authenticatedRequest(url, options = {}) {
     });
     const data = await parseResponseBody(response);
 
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 403) {
       logoutUser();
       redirectToLogin();
-      throw new AuthenticatedRequestError("Your session expired. Please log in again.", {
-        status: 401,
+      throw new AuthenticatedRequestError("Session expired. Please log in again.", {
+        status: response.status,
         data,
         isUnauthorized: true
       });

@@ -2,31 +2,30 @@
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
   align-items: end;
-  gap: 16px;
-  padding: 18px;
+  gap: 12px;
+  padding: 14px;
   background: var(--color-surface);
   border: 1px solid var(--color-panel-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-small);
+  border-radius: 8px;
 }
 
 .compare-submit-btn {
-  min-width: 130px;
-  height: 46px;
+  min-width: 112px;
+  height: 40px;
   color: var(--color-text-inverse);
   background: var(--color-control-selected-background);
   border: 1px solid var(--color-control-selected-background);
-  border-radius: 14px;
+  border-radius: 10px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 800;
   padding: 0 18px;
   transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .compare-submit-btn:hover:not(:disabled) {
-  box-shadow: var(--shadow-large);
+  box-shadow: var(--shadow-small);
 }
 
 .compare-submit-btn:active:not(:disabled) {

@@ -1,4 +1,7 @@
+import { getOrSetCachedData } from "../cache/apiCache";
+
 const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+const COMPANY_PROFILE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function normalizeProfile(data, fallbackTicker) {
   if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
@@ -27,18 +30,30 @@ export async function getCompanyProfile(ticker) {
   }
 
   const normalizedTicker = ticker.trim().toUpperCase();
-  const params = new URLSearchParams({
-    symbol: normalizedTicker,
-    token: FINNHUB_API_KEY
-  });
+  const cacheKey = `companyProfile:${normalizedTicker}`;
 
-  const response = await fetch(
-    `https://finnhub.io/api/v1/stock/profile2?${params.toString()}`
+  return getOrSetCachedData(
+    cacheKey,
+    async () => {
+      const params = new URLSearchParams({
+        symbol: normalizedTicker,
+        token: FINNHUB_API_KEY
+      });
+
+      const response = await fetch(
+        `https://finnhub.io/api/v1/stock/profile2?${params.toString()}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Company profile request failed with status ${response.status}`);
+      }
+
+      return normalizeProfile(await response.json(), normalizedTicker);
+    },
+    COMPANY_PROFILE_CACHE_TTL_MS,
+    {
+      // Profile data changes slowly; caching successful results prevents repeated quota-heavy modal calls.
+      shouldCache: (profile) => Boolean(profile)
+    }
   );
-
-  if (!response.ok) {
-    throw new Error(`Company profile request failed with status ${response.status}`);
-  }
-
-  return normalizeProfile(await response.json(), normalizedTicker);
 }
