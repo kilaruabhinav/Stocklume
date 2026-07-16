@@ -1,0 +1,160 @@
+.portfolio-section {
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.portfolio-section__header {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.portfolio-section__header h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.portfolio-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.portfolio-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-divider);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.portfolio-table th {
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.portfolio-table td {
+  color: var(--color-text-primary);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.portfolio-table th:first-child,
+.portfolio-table td:first-child {
+  font-weight: 900;
+}
+
+.portfolio-table th:nth-child(2),
+.portfolio-table th:nth-child(3),
+.portfolio-table th:nth-child(4),
+.portfolio-table th:nth-child(5),
+.portfolio-table th:nth-child(6),
+.portfolio-table td:nth-child(2),
+.portfolio-table td:nth-child(3),
+.portfolio-table td:nth-child(4),
+.portfolio-table td:nth-child(5),
+.portfolio-table td:nth-child(6) {
+  text-align: right;
+}
+
+.portfolio-table th:last-child,
+.portfolio-table td:last-child {
+  text-align: center;
+}
+
+.portfolio-table tbody tr:hover {
+  background: var(--color-row-hover);
+}
+
+.portfolio-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.portfolio-profit-loss-chip {
+  display: inline-flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 76px;
+  padding: 6px 8px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-card-border);
+  border-radius: 7px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.portfolio-profit-loss-chip small {
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.portfolio-profit-loss-chip.portfolio-profit-loss--positive {
+  background: var(--color-success-soft);
+  border-color: var(--color-success-border);
+}
+
+.portfolio-profit-loss-chip.portfolio-profit-loss--negative {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+}
+
+.portfolio-profit-loss--positive {
+  color: var(--color-success-strong);
+}
+
+.portfolio-profit-loss--negative {
+  color: var(--color-danger-strong);
+}
+
+.portfolio-profit-loss--neutral,
+.portfolio-muted-value {
+  color: var(--color-text-muted);
+}
+
+.portfolio-muted-value {
+  font-weight: 700;
+}
+
+.portfolio-sell-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  color: var(--color-danger-strong);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0 10px;
+}
+
+.portfolio-sell-button:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  transform: translateY(-1px);
+}
+
+.portfolio-sell-button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-danger-focus);
+}

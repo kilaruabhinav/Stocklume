@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 
 // Adjusted paths to step out of the Dashboard folder into src/
 import { updateStock } from "../services/GetStats/updatestockapi";
@@ -84,6 +84,8 @@ export function DashboardHooks() {
   const activeChartRequestRef = useRef(0);
   const activeSelectionRequestRef = useRef(0);
   const repairedWatchlistRef = useRef(false);
+  const stocksRef = useRef(stocks);
+  const quoteRefreshInFlightRef = useRef(false);
 
   function addToast({ title, message = "", type = "info" }) {
     const id = Date.now() + Math.random();
@@ -96,6 +98,14 @@ export function DashboardHooks() {
 
   function dismissToast(id) {
     setToasts(prev => prev.filter(toast => toast.id !== id));
+  }
+
+  function handleSimulationBuySuccess({ symbol, quantity, totalValue }) {
+    addToast({
+      title: "Virtual buy complete",
+      message: `${quantity} ${symbol} bought for $${totalValue.toFixed(2)}.`,
+      type: "success"
+    });
   }
 
   // Main Chart Cache Management and Fetching Effect
@@ -128,10 +138,6 @@ export function DashboardHooks() {
           TIMEFRAME_WEIGHTS[CurrTimeframe];
 
       if (hasEnoughData) {
-        console.log(
-          `📊 Cache Hit: Trimming ${cachedStockData.range} data down to ${CurrTimeframe} for ${ticker}.`
-        );
-
         const trimmedPrices =
           cachedStockData.prices.slice(-daysRequired);
 
@@ -151,10 +157,6 @@ export function DashboardHooks() {
         if (CurrTimeframe === "3M") apiDaysParam = 90;
         if (CurrTimeframe === "6M") apiDaysParam = 180;
         if (CurrTimeframe === "1Y") apiDaysParam = 365;
-
-        console.log(
-          `🌐 Cache Miss: Requested ${CurrTimeframe}, fetching ${apiDaysParam} days for ${ticker}.`
-        );
 
         const response = await getChartData(
           ticker,
@@ -210,6 +212,10 @@ export function DashboardHooks() {
     chartCacheRef.current = ChartCache;
     localStorage.setItem("ChartCache", JSON.stringify(ChartCache));
   }, [ChartCache]);
+
+  useEffect(() => {
+    stocksRef.current = stocks;
+  }, [stocks]);
 
   // Synchronize newsCache to localStorage when state alters
   useEffect(() => {
@@ -294,10 +300,18 @@ export function DashboardHooks() {
     setCurrTimeframe(t);
   }
 
-  useEffect(() => {
-    async function refreshWatchlist() {
+  const refreshWatchlistQuotes = useCallback(async () => {
+    const currentStocks = stocksRef.current;
+
+    if (quoteRefreshInFlightRef.current || currentStocks.length === 0) {
+      return;
+    }
+
+    quoteRefreshInFlightRef.current = true;
+
+    try {
       const updatedStocks = await Promise.all(
-        stocks.map(async (stock) => {
+        currentStocks.map(async (stock) => {
           const freshData = await updateStock(stock.ticker);
           if (!freshData) return stock;
           return {
@@ -308,20 +322,31 @@ export function DashboardHooks() {
           };
         })
       );
-      setStocks(updatedStocks);
-    }
 
+      const updatedById = new Map(updatedStocks.map((stock) => [stock.id, stock]));
+
+      setStocks((latestStocks) =>
+        latestStocks.map((stock) => updatedById.get(stock.id) || stock)
+      );
+    } finally {
+      quoteRefreshInFlightRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      refreshWatchlist();
+      refreshWatchlistQuotes();
     }, 120000);
 
+    return () => clearInterval(interval);
+  }, [refreshWatchlistQuotes]);
+
+  useEffect(() => {
     if (!repairedWatchlistRef.current && stocks.length > 0) {
       repairedWatchlistRef.current = true;
-      refreshWatchlist();
+      refreshWatchlistQuotes();
     }
-
-    return () => clearInterval(interval);
-  }, [stocks]);
+  }, [refreshWatchlistQuotes, stocks]);
 
   async function handleNews(stock) {
     const ticker = stock.ticker;
@@ -396,11 +421,11 @@ export function DashboardHooks() {
       }
 
       const savedStock = await addToWatchlist(ticker);
-      const savedStockId =
-        savedStock.id ||
-        savedStock.stock?.id ||
-        savedStock.watchlist?.id ||
-        Date.now();
+      const savedStockId = savedStock.watchlist_item?.id;
+
+      if (!savedStockId) {
+        throw new Error("Watchlist item was saved, but the backend did not return its database ID.");
+      }
 
       setStocks(prev => [
         ...prev,
@@ -480,6 +505,7 @@ export function DashboardHooks() {
     getData,
     DeleteStock,
     handleSelectStock,
+    handleSimulationBuySuccess,
     onTimeframeChange,
     dismissToast,
     CurrTimeframe,

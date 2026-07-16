@@ -12,8 +12,7 @@ function Dashboard() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const profile = await getProfile();
-        console.log("Authenticated profile:", profile);
+        await getProfile();
       } catch (error) {
         console.error("Profile error:", error.message);
       }
@@ -37,6 +36,7 @@ function Dashboard() {
     getData,
     DeleteStock,
     handleSelectStock,
+    handleSimulationBuySuccess,
     onTimeframeChange,
     dismissToast,
     CurrTimeframe,
@@ -68,6 +68,7 @@ function Dashboard() {
           newsloadingStatus={newsLoading} 
           chartData={chartData}
           onTimeframeChange={onTimeframeChange}
+          onSimulationBuySuccess={handleSimulationBuySuccess}
           CurrTimeframe={CurrTimeframe}
           ChartLoading={ChartLoading}
         />

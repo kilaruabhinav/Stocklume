@@ -203,10 +203,16 @@ Note: the code expects `VITE_VINTAGEALPHA_API_KEY` for Alpha Vantage.
 
 ## Database Setup
 
-Create a MySQL database with `users` and `watchlist` tables compatible with the backend routes:
+Create a MySQL database with `users` and `watchlist` tables compatible with the backend routes. The canonical setup file is `backend/schema.sql`:
+
+```bash
+mysql -u your_database_user -p your_database_name < ../backend/schema.sql
+```
+
+The schema currently matches:
 
 ```sql
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -214,7 +220,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE watchlist (
+CREATE TABLE IF NOT EXISTS watchlist (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   symbol VARCHAR(32) NOT NULL,

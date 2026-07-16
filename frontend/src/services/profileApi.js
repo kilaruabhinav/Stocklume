@@ -1,24 +1,8 @@
 import { buildApiUrl } from "./apiConfig";
+import { authenticatedRequest } from "./authenticatedRequest";
 
 export async function getProfile() {
-  const token = localStorage.getItem("access_token");
-
-  if (!token) {
-    throw new Error("No access token found. Please log in again.");
-  }
-
-  const response = await fetch(buildApiUrl("/profile"), {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  return authenticatedRequest(buildApiUrl("/profile"), {
+    method: "GET"
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail || "Could not load profile.");
-  }
-
-  return data;
 }

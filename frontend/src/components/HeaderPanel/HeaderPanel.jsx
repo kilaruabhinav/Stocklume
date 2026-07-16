@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   addAuthChangeListener,
-  getStoredUser,
-  logoutUser
+  getStoredUser
 } from '../../services/Auth/authStorage';
 import './HeaderPanel.css';
 
@@ -16,11 +15,6 @@ const HeaderPanel = () => {
       setUser(getStoredUser());
     });
   }, []);
-
-  const handleLogout = () => {
-    logoutUser();
-    setUser(null);
-  };
 
   return (
     <header className="header-panel">
@@ -43,12 +37,13 @@ const HeaderPanel = () => {
         </NavLink>
         {user ? (
           <>
+            <NavLink to="/portfolio" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+              Portfolio
+            </NavLink>
             <NavLink to="/profile" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               Profile
             </NavLink>
-            <button className="nav-logout-btn" type="button" onClick={handleLogout}>
-              Logout
-            </button>
+            
           </>
         ) : (
           <NavLink to="/login" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>

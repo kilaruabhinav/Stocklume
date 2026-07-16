@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   addAuthChangeListener,
   getStoredUser,
-  logoutUser
+  logoutUser,
+  storeUser
 } from "../services/Auth/authStorage";
+import { getProfile } from "../services/profileApi";
 import ProfileOverview from "./components/ProfileOverview/ProfileOverview";
 import ProfileSession from "./components/ProfileSession/ProfileSession";
 import ThemeToggle from "../components/ThemeToggle/ThemeToggle";
@@ -12,31 +14,84 @@ import "./Profile.css";
 
 function Profile({ theme, onThemeToggle }) {
   const navigate = useNavigate();
-  const [user, setUser] = useState(() => getStoredUser());
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login", { replace: true });
-      return undefined;
+    return addAuthChangeListener(() => {
+      setUser(getStoredUser());
+    });
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadProfile() {
+      setLoading(true);
+
+      try {
+        const profileData = await getProfile();
+        const backendUser = profileData?.user;
+
+        if (!backendUser) {
+          throw new Error("Profile response was missing user details.");
+        }
+
+        const cachedUser = getStoredUser();
+        const verifiedUser = {
+          ...cachedUser,
+          ...backendUser,
+          loggedInAt: cachedUser?.loggedInAt || new Date().toISOString()
+        };
+
+        storeUser(verifiedUser);
+
+        if (isActive) {
+          setUser(verifiedUser);
+        }
+      } catch (error) {
+        console.error("Profile verification failed:", error);
+        logoutUser();
+        navigate("/login?reason=session-expired", { replace: true });
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
     }
 
-    return addAuthChangeListener(() => {
-      const nextUser = getStoredUser();
-      setUser(nextUser);
-
-      if (!nextUser) {
-        navigate("/login", { replace: true });
-      }
+    queueMicrotask(() => {
+      loadProfile();
     });
-  }, [navigate, user]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [navigate]);
 
   const handleLogout = () => {
     logoutUser();
     navigate("/login", { replace: true });
   };
 
+  if (loading) {
+    return (
+      <main className="profile-page">
+        <section className="profile-state" aria-live="polite">
+          Checking your session...
+        </section>
+      </main>
+    );
+  }
+
   if (!user) {
-    return null;
+    return (
+      <main className="profile-page">
+        <section className="profile-state profile-state--error">
+          Please log in to view your profile.
+        </section>
+      </main>
+    );
   }
 
   return (

@@ -75,6 +75,37 @@
   box-shadow: var(--shadow-focus);
 }
 
+.selected-stock-summary__buy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--color-text-inverse);
+  background: var(--color-success);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 7px 10px;
+  transition:
+    background-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.selected-stock-summary__buy-btn:hover {
+  background: var(--color-success-strong);
+  transform: translateY(-1px);
+}
+
+.selected-stock-summary__buy-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 .selected-stock-summary__details-spinner {
   width: 10px;
   height: 10px;

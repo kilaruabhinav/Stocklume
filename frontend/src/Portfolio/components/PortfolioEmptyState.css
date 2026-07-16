@@ -1,0 +1,8 @@
+.portfolio-empty-state {
+  margin: 0;
+  padding: 16px 14px;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.45;
+}

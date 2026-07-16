@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   getStoredUser,
   notifyAuthChange
@@ -8,20 +8,32 @@ import { buildApiUrl } from "../../../services/apiConfig";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const requestedRedirect =
+    searchParams.get("redirectTo") ||
+    (location.state?.from
+      ? `${location.state.from.pathname}${location.state.from.search || ""}`
+      : "");
+  const redirectTo = requestedRedirect.startsWith("/") ? requestedRedirect : "/dashboard";
+  const sessionMessage =
+    searchParams.get("reason") === "session-expired"
+      ? "Your session expired. Please log in again."
+      : location.state?.message || "";
 
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState(sessionMessage);
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (getStoredUser()) {
-      navigate("/profile", { replace: true });
+      navigate(redirectTo, { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, redirectTo]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -82,10 +94,10 @@ function LoginForm() {
       );
 
       notifyAuthChange();
-      setSuccess("Login successful. Redirecting to dashboard...");
+      setSuccess("Login successful. Redirecting...");
 
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate(redirectTo);
       }, 600);
 
     } catch (error) {

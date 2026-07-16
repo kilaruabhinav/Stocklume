@@ -9,7 +9,7 @@ import ChartData from "../Chart/ChartData";
 import SelectedStockSummary from "../SelectedStockSummary/SelectedStockSummary";
 import CompanyDetailsModal from "../CompanyDetailsModal/CompanyDetailsModal";
 
-function AnalizePanel({selectedstock,analize,load,currnews,newsloadingStatus,chartData,onTimeframeChange,CurrTimeframe,ChartLoading,
+function AnalizePanel({selectedstock,analize,load,currnews,newsloadingStatus,chartData,onTimeframeChange,CurrTimeframe,ChartLoading,onSimulationBuySuccess,
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -27,6 +27,7 @@ function AnalizePanel({selectedstock,analize,load,currnews,newsloadingStatus,cha
             stock={selectedstock}
             timeframe={CurrTimeframe}
             onDetailsClick={() => setDetailsOpen(true)}
+            onSimulationBuySuccess={onSimulationBuySuccess}
             detailsLoading={load}
           />
           <CompanyDetailsModal

@@ -1,7 +1,11 @@
 const AUTH_EVENT_NAME = "stockpulse-auth-change";
 
+export function getAccessToken() {
+  return localStorage.getItem("access_token");
+}
+
 export function getStoredUser() {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   const rawUser = localStorage.getItem("stockpulse_user");
 
   if (!token || !rawUser) {
@@ -13,6 +17,11 @@ export function getStoredUser() {
   } catch {
     return null;
   }
+}
+
+export function storeUser(user) {
+  localStorage.setItem("stockpulse_user", JSON.stringify(user));
+  notifyAuthChange();
 }
 
 export function isLoggedIn() {

@@ -1,0 +1,109 @@
+.portfolio-performance {
+  padding: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.portfolio-performance__header {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.portfolio-performance__header h2 {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.portfolio-performance__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.portfolio-performance__grid article {
+  min-width: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.portfolio-performance__grid article:last-child {
+  border-bottom: 0;
+}
+
+.portfolio-performance__grid span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.portfolio-performance__grid strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.portfolio-performance__grid small {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.portfolio-performance__grid small.portfolio-profit-loss--positive {
+  color: var(--color-success-strong);
+}
+
+.portfolio-performance__grid small.portfolio-profit-loss--negative {
+  color: var(--color-danger-strong);
+}
+
+.portfolio-performance__grid small.portfolio-profit-loss--neutral {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 980px) {
+  .portfolio-performance__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .portfolio-performance__grid article:nth-child(1),
+  .portfolio-performance__grid article:nth-child(3) {
+    border-right: 1px solid var(--color-divider);
+  }
+
+  .portfolio-performance__grid article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .portfolio-performance__grid article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-divider);
+  }
+}
+
+@media (max-width: 640px) {
+  .portfolio-performance__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-performance__grid article,
+  .portfolio-performance__grid article:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .portfolio-performance__grid article:last-child {
+    border-bottom: 0;
+  }
+}

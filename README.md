@@ -11,6 +11,7 @@ stock_analysis/
     database.py          Environment loading and MySQL connection helper
     security.py          Password hashing and JWT helpers
     requirements.txt     Backend Python dependencies
+    schema.sql           Canonical MySQL schema for local setup
     .env.example         Backend environment template
   frontend/
     src/                 React application source
@@ -48,7 +49,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-The backend expects MySQL tables for `users` and `watchlist`. See `frontend/README.md` for the SQL schema and route details.
+The backend expects MySQL tables for `users` and `watchlist`. Use `backend/schema.sql` as the canonical local setup schema. See `frontend/README.md` for route details.
 
 ## Frontend
 

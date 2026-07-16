@@ -1,3 +1,5 @@
+import { useState } from "react";
+import SimulationBuyModal from "../SimulationBuyModal/SimulationBuyModal";
 import "./SelectedStockSummary.css";
 
 function formatPrice(value) {
@@ -17,7 +19,15 @@ function formatChange(change, percentChange) {
   return `${sign}${changeNumber.toFixed(2)} (${sign}${percentNumber.toFixed(2)}%)`;
 }
 
-function SelectedStockSummary({ stock, timeframe, onDetailsClick, detailsLoading = false }) {
+function SelectedStockSummary({
+  stock,
+  timeframe,
+  onDetailsClick,
+  onSimulationBuySuccess,
+  detailsLoading = false
+}) {
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
+
   if (!stock) return null;
 
   const changeNumber = Number(stock.change);
@@ -53,6 +63,13 @@ function SelectedStockSummary({ stock, timeframe, onDetailsClick, detailsLoading
             )}
           </button>
         )}
+        <button
+          type="button"
+          className="selected-stock-summary__buy-btn"
+          onClick={() => setBuyModalOpen(true)}
+        >
+          Buy with virtual money
+        </button>
       </div>
 
       <div className="selected-stock-summary__metrics">
@@ -73,6 +90,14 @@ function SelectedStockSummary({ stock, timeframe, onDetailsClick, detailsLoading
           <strong className="selected-stock-summary__value">{timeframe}</strong>
         </div>
       </div>
+      {buyModalOpen && (
+        <SimulationBuyModal
+          stock={stock}
+          isOpen={buyModalOpen}
+          onClose={() => setBuyModalOpen(false)}
+          onSuccess={onSimulationBuySuccess}
+        />
+      )}
     </section>
   );
 }
