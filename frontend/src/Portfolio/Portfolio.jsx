@@ -1,10 +1,13 @@
 import { useState } from "react";
+import SimulationResetModal from "../components/SimulationResetModal/SimulationResetModal";
 import SimulationSellModal from "../components/SimulationSellModal/SimulationSellModal";
+import { resetSimulation } from "../services/Simulation/simulationApi";
 import HoldingsTable from "./components/HoldingsTable";
 import PerformanceBreakdown from "./components/PerformanceBreakdown";
 import PortfolioOverview from "./components/PortfolioOverview";
 import PortfolioStatusMessage from "./components/PortfolioStatusMessage";
 import RecentTrades from "./components/RecentTrades";
+import SimulationSettings from "./components/SimulationSettings";
 import { usePortfolioData } from "./hooks/usePortfolioData";
 import { formatCurrency, formatQuantity } from "./utils/portfolioFormatters";
 import "./Portfolio.css";
@@ -23,6 +26,9 @@ function Portfolio() {
   } = usePortfolioData();
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedSellHolding, setSelectedSellHolding] = useState(null);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
 
   async function handleSellSuccess({ symbol, quantity, totalValue }) {
     await refreshPortfolio({ showLoading: false });
@@ -34,6 +40,28 @@ function Portfolio() {
   function openSellModal(holding) {
     setSuccessMessage("");
     setSelectedSellHolding(holding);
+  }
+
+  async function handleResetSimulation() {
+    setResetError("");
+    setResetSubmitting(true);
+
+    try {
+      await resetSimulation();
+      await refreshPortfolio({ showLoading: false });
+      setSuccessMessage("Simulation reset successfully.");
+      setIsResetModalOpen(false);
+    } catch (resetRequestError) {
+      setResetError(resetRequestError.message || "Could not reset simulation.");
+    } finally {
+      setResetSubmitting(false);
+    }
+  }
+
+  function openResetModal() {
+    setSuccessMessage("");
+    setResetError("");
+    setIsResetModalOpen(true);
   }
 
   if (loading) {
@@ -93,6 +121,8 @@ function Portfolio() {
         <PerformanceBreakdown holdings={enrichedHoldings} totals={totals} />
       </div>
 
+      <SimulationSettings onResetClick={openResetModal} />
+
       {selectedSellHolding && (
         <SimulationSellModal
           holding={selectedSellHolding}
@@ -101,6 +131,14 @@ function Portfolio() {
           onSuccess={handleSellSuccess}
         />
       )}
+
+      <SimulationResetModal
+        error={resetError}
+        isOpen={isResetModalOpen}
+        isSubmitting={resetSubmitting}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetSimulation}
+      />
     </main>
   );
 }
