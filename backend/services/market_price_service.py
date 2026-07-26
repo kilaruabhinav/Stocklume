@@ -1,15 +1,20 @@
 import json
+import logging
 import os
+import ssl
 from decimal import Decimal, InvalidOperation
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
+import certifi
 from fastapi import HTTPException
 
 
+logger = logging.getLogger(__name__)
 PRICE_LOOKUP_ERROR = "Could not fetch current price. Please try again."
 REQUEST_TIMEOUT_SECONDS = 8
+SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 def get_current_price(symbol: str) -> Decimal:
@@ -42,11 +47,17 @@ def fetch_finnhub_price(symbol: str):
                 "token": api_key
             }
         )
-        data = fetch_json(url)
+        data = fetch_json(url, provider="finnhub", symbol=candidate)
         price = parse_price(data.get("c") if isinstance(data, dict) else None)
 
         if price is not None:
             return price
+
+        logger.warning(
+            "Simulation price lookup returned no usable price: "
+            "symbol=%s provider=finnhub",
+            candidate
+        )
 
     return None
 
@@ -58,17 +69,30 @@ def fetch_yahoo_price(symbol: str):
         f"https://query1.finance.yahoo.com/v8/finance/chart/{encoded_symbol}"
         "?range=5d&interval=1d"
     )
-    data = fetch_json(url)
+    data = fetch_json(url, provider="yahoo", symbol=yahoo_symbol)
     result = data.get("chart", {}).get("result", []) if isinstance(data, dict) else []
 
     if not result:
+        logger.warning(
+            "Simulation price lookup returned no result: symbol=%s provider=yahoo",
+            yahoo_symbol
+        )
         return None
 
     meta = result[0].get("meta", {})
-    return parse_price(meta.get("regularMarketPrice"))
+    price = parse_price(meta.get("regularMarketPrice"))
+
+    if price is None:
+        logger.warning(
+            "Simulation price lookup returned no usable price: "
+            "symbol=%s provider=yahoo",
+            yahoo_symbol
+        )
+
+    return price
 
 
-def fetch_json(url: str):
+def fetch_json(url: str, provider: str, symbol: str):
     request = Request(
         url,
         headers={
@@ -77,9 +101,37 @@ def fetch_json(url: str):
     )
 
     try:
-        with urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
+        with urlopen(
+            request,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+            context=SSL_CONTEXT
+        ) as response:
             return json.loads(response.read().decode("utf-8"))
-    except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
+    except HTTPError as error:
+        logger.warning(
+            "Simulation price lookup HTTP error: symbol=%s provider=%s status=%s",
+            symbol,
+            provider,
+            error.code
+        )
+        return None
+    except (URLError, TimeoutError, OSError) as error:
+        logger.warning(
+            "Simulation price lookup network error: "
+            "symbol=%s provider=%s error=%s",
+            symbol,
+            provider,
+            type(error).__name__
+        )
+        return None
+    except (ValueError, json.JSONDecodeError) as error:
+        logger.warning(
+            "Simulation price lookup invalid response: "
+            "symbol=%s provider=%s error=%s",
+            symbol,
+            provider,
+            type(error).__name__
+        )
         return None
 
 

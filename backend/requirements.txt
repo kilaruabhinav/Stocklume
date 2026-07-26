@@ -4,3 +4,4 @@ mysql-connector-python
 PyJWT
 pwdlib[argon2]
 pydantic
+certifi
