@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { getCompanyProfile } from "../../services/CompanyProfile/companyProfileApi";
 import { getFinancialDetails } from "../../services/FinancialDetails/financialDetailsApi";
+import { getSafeExternalUrl } from "../../services/safeExternalUrl";
 import CompanyDetailsBreakdown from "./CompanyDetailsBreakdown";
 import CompanyDetailsSummary from "./CompanyDetailsSummary";
 import IncomeStatementTable from "./IncomeStatementTable";
@@ -355,8 +356,8 @@ function CompanyDetailsModal({ open, stock, analysis, onClose }) {
 
             <IncomeStatementTable statements={statementColumns} />
 
-            {website && (
-              <a className="company-details-modal__website" href={website} target="_blank" rel="noopener noreferrer">
+            {getSafeExternalUrl(website) && (
+              <a className="company-details-modal__website" href={getSafeExternalUrl(website)} target="_blank" rel="noopener noreferrer">
                 Visit company website
               </a>
             )}

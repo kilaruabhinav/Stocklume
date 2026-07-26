@@ -9,6 +9,7 @@ from services.watchlist_service import (
     get_watchlist_items,
     normalize_symbol
 )
+from services.rate_limit_service import enforce_user_rate_limit
 from utils.db_helpers import get_authenticated_user_id
 
 
@@ -21,6 +22,7 @@ def get_watchlist(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -40,6 +42,7 @@ def add_to_watchlist(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     symbol = normalize_symbol(data.symbol)
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
@@ -56,6 +59,10 @@ def add_to_watchlist(
             }
         }
 
+    except Exception:
+        mydb.rollback()
+        raise
+
     finally:
         cursor.close()
         mydb.close()
@@ -67,6 +74,7 @@ def delete_from_watchlist(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     symbol = normalize_symbol(data.symbol)
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
@@ -79,6 +87,10 @@ def delete_from_watchlist(
             "message": "Stock deleted from watchlist",
             "symbol": symbol
         }
+
+    except Exception:
+        mydb.rollback()
+        raise
 
     finally:
         cursor.close()

@@ -1,4 +1,4 @@
-const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 
 export async function searchTickers(query) {
   const trimmedQuery = query.trim();
@@ -8,8 +8,8 @@ export async function searchTickers(query) {
   }
 
   try {
-    const response = await fetch(
-      `https://finnhub.io/api/v1/search?q=${encodeURIComponent(trimmedQuery)}&token=${API_KEY}`
+    const response = await marketRequest(
+      buildMarketApiUrl("/finnhub/search", { q: trimmedQuery })
     );
 
     if (!response.ok) {

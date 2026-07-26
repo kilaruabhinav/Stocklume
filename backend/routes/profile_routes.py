@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from database import get_db_connection
+from services.rate_limit_service import enforce_user_rate_limit
 from utils.db_helpers import get_authenticated_user_id
 
 
@@ -14,6 +15,7 @@ def get_profile(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 

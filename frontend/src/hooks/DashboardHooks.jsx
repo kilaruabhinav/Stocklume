@@ -62,13 +62,23 @@ function isFreshChartCache(cacheItem) {
   return ageInDays <= MAX_CHART_STALENESS_DAYS;
 }
 
+function readArrayCache(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
+  } catch {
+    localStorage.removeItem(key);
+    return [];
+  }
+}
+
 export function DashboardHooks() {
   const [CurrTimeframe, setCurrTimeframe] = useState("1M");
-  const [ChartCache, setChartCache] = useState(() => JSON.parse(localStorage.getItem("ChartCache")) || []);
+  const [ChartCache, setChartCache] = useState(() => readArrayCache("ChartCache"));
   const [currentNews, setCurrentNews] = useState([]);
 
   const [NewsData, SetNewsData] = useState(
-    () => JSON.parse(localStorage.getItem("newsCache")) || []
+    () => readArrayCache("newsCache")
   );
   const [analysisData, setAnalysisData] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);

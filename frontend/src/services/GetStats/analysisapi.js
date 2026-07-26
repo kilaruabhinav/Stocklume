@@ -1,9 +1,9 @@
-const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 
 export async function getAnalysis(ticker) {
   try {
-    const response = await fetch(
-      `https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${API_KEY}`
+    const response = await marketRequest(
+      buildMarketApiUrl("/finnhub/metric", { symbol: ticker })
     );
 
     const data = await response.json();

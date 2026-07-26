@@ -1,4 +1,5 @@
 import "./NewsCard.css";
+import { getSafeExternalUrl } from "../../../services/safeExternalUrl";
 
 function formatNewsDate(dateValue) {
     if (!dateValue) return "";
@@ -27,9 +28,10 @@ function NewsCard({ news }) {
     const source = news.source || "Market News";
     const headline = news.headline || "Market update";
     const summary = news.content || "Open the article for the full market context.";
+    const safeUrl = getSafeExternalUrl(news.url);
 
     return (
-        <a href={news.url} target="_blank" rel="noopener noreferrer" className="news-card-link">
+        <a href={safeUrl || undefined} target="_blank" rel="noopener noreferrer" className="news-card-link">
             <div className="news-card">
                 <div className="news-card__content">
                     <div className="news-card__meta">

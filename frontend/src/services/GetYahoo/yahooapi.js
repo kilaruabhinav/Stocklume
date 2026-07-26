@@ -1,3 +1,5 @@
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
+
 const RANGE_BY_OUTPUT_SIZE = {
   30: "1mo",
   90: "3mo",
@@ -28,7 +30,10 @@ function normalizeYahooSymbol(symbol) {
 
 function getYahooUrl(symbol, range = "1mo") {
   const encodedSymbol = encodeURIComponent(normalizeYahooSymbol(symbol));
-  return `/api/yahoo-chart/${encodedSymbol}?range=${range}&interval=1d`;
+  return buildMarketApiUrl(`/yahoo-chart/${encodedSymbol}`, {
+    range,
+    interval: "1d"
+  });
 }
 
 function getFiniteNumber(value) {
@@ -72,7 +77,7 @@ export async function getYahooChartData(ticker, outputSize = 30) {
   const range = RANGE_BY_OUTPUT_SIZE[outputSize] || "1mo";
 
   try {
-    const response = await fetch(getYahooUrl(ticker, range));
+    const response = await marketRequest(getYahooUrl(ticker, range));
 
     if (!response.ok) {
       throw new Error(`Yahoo chart request failed with status ${response.status}`);
@@ -106,7 +111,7 @@ export async function getYahooChartData(ticker, outputSize = 30) {
 
 export async function getYahooQuote(ticker) {
   try {
-    const response = await fetch(getYahooUrl(ticker, "5d"));
+    const response = await marketRequest(getYahooUrl(ticker, "5d"));
 
     if (!response.ok) {
       throw new Error(`Yahoo quote request failed with status ${response.status}`);

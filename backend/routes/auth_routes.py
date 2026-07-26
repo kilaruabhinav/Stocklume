@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from mysql.connector import IntegrityError
 
 from database import get_db_connection
 from schemas.auth import LoginData, RegistrationData
@@ -7,13 +8,15 @@ from security import (
     hash_password,
     verify_password
 )
+from services.rate_limit_service import enforce_client_rate_limit
 
 
 router = APIRouter()
 
 
 @router.post("/login")
-def login(data: LoginData):
+def login(data: LoginData, request: Request):
+    enforce_client_rate_limit(request, "login")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -47,26 +50,15 @@ def login(data: LoginData):
 
 
 @router.post("/register")
-def register(data: RegistrationData):
+def register(data: RegistrationData, request: Request):
+    enforce_client_rate_limit(request, "register")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
     try:
-        name = data.name.strip()
-        email = data.email.strip().lower()
+        name = data.name
+        email = data.email
         password = data.password
-
-        if not name:
-            raise HTTPException(status_code=400, detail="Name is required")
-
-        if not email:
-            raise HTTPException(status_code=400, detail="Email is required")
-
-        if len(password) < 8:
-            raise HTTPException(
-                status_code=400,
-                detail="Password must be at least 8 characters"
-            )
 
         cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
 
@@ -86,6 +78,13 @@ def register(data: RegistrationData):
         return {
             "message": "User added successfully"
         }
+
+    except IntegrityError:
+        mydb.rollback()
+        raise HTTPException(status_code=409, detail="User already exists")
+    except Exception:
+        mydb.rollback()
+        raise
 
     finally:
         cursor.close()

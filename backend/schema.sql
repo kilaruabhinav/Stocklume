@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS simulation_accounts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_simulation_account_user (user_id),
+    CONSTRAINT chk_simulation_starting_balance
+        CHECK (starting_balance >= 0),
+    CONSTRAINT chk_simulation_cash_balance
+        CHECK (cash_balance >= 0),
     CONSTRAINT fk_simulation_account_user
         FOREIGN KEY (user_id)
         REFERENCES users(id)
@@ -53,6 +57,10 @@ CREATE TABLE IF NOT EXISTS simulation_holdings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_simulation_holding_user_symbol (user_id, symbol),
+    CONSTRAINT chk_simulation_holding_quantity
+        CHECK (quantity > 0),
+    CONSTRAINT chk_simulation_holding_average_price
+        CHECK (average_price > 0),
     CONSTRAINT fk_simulation_holding_user
         FOREIGN KEY (user_id)
         REFERENCES users(id)
@@ -70,8 +78,30 @@ CREATE TABLE IF NOT EXISTS simulation_trades (
     total_value DECIMAL(18, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_simulation_trades_user_created_at (user_id, created_at),
+    CONSTRAINT chk_simulation_trade_type
+        CHECK (trade_type IN ('BUY', 'SELL')),
+    CONSTRAINT chk_simulation_trade_quantity
+        CHECK (quantity > 0),
+    CONSTRAINT chk_simulation_trade_price
+        CHECK (price > 0),
+    CONSTRAINT chk_simulation_trade_total
+        CHECK (total_value > 0),
     CONSTRAINT fk_simulation_trade_user
         FOREIGN KEY (user_id)
         REFERENCES users(id)
         ON DELETE CASCADE
+);
+
+-- Caches non-authoritative market data to reduce repeated provider requests.
+-- Simulation execution prices deliberately bypass this table.
+CREATE TABLE IF NOT EXISTS api_cache (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cache_key VARCHAR(255) NOT NULL UNIQUE,
+    data_type VARCHAR(50) NOT NULL,
+    symbol VARCHAR(32) NULL,
+    response_data JSON NOT NULL,
+    fetched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    INDEX idx_api_cache_expires_at (expires_at),
+    INDEX idx_api_cache_symbol_type (symbol, data_type)
 );

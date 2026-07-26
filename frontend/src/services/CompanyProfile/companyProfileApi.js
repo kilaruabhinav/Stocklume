@@ -1,6 +1,5 @@
 import { getOrSetCachedData } from "../cache/apiCache";
-
-const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 const COMPANY_PROFILE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function normalizeProfile(data, fallbackTicker) {
@@ -25,23 +24,14 @@ function normalizeProfile(data, fallbackTicker) {
 }
 
 export async function getCompanyProfile(ticker) {
-  if (!FINNHUB_API_KEY) {
-    throw new Error("Finnhub API key is missing.");
-  }
-
   const normalizedTicker = ticker.trim().toUpperCase();
   const cacheKey = `companyProfile:${normalizedTicker}`;
 
   return getOrSetCachedData(
     cacheKey,
     async () => {
-      const params = new URLSearchParams({
-        symbol: normalizedTicker,
-        token: FINNHUB_API_KEY
-      });
-
-      const response = await fetch(
-        `https://finnhub.io/api/v1/stock/profile2?${params.toString()}`
+      const response = await marketRequest(
+        buildMarketApiUrl("/finnhub/profile", { symbol: normalizedTicker })
       );
 
       if (!response.ok) {

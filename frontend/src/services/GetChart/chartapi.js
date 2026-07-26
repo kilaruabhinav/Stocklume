@@ -1,6 +1,5 @@
 import { getYahooChartData } from "../GetYahoo/yahooapi";
-
-const API_KEY = import.meta.env.VITE_TWELVEDATA_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 
 const RANGE_BY_OUTPUT_SIZE = {
   30: "1M",
@@ -72,8 +71,11 @@ export async function getChartData(ticker, outputSize = 30) {
       return getYahooChartData(normalizedTicker, outputSize);
     }
 
-    const response = await fetch(
-      `https://api.twelvedata.com/time_series?symbol=${normalizedTicker}&interval=1day&outputsize=${outputSize}&apikey=${API_KEY}`
+    const response = await marketRequest(
+      buildMarketApiUrl("/twelve-data/time-series", {
+        symbol: normalizedTicker,
+        outputsize: outputSize
+      })
     );
 
     if (!response.ok) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SimulationResetModal from "../components/SimulationResetModal/SimulationResetModal";
 import SimulationSellModal from "../components/SimulationSellModal/SimulationSellModal";
 import { resetSimulation } from "../services/Simulation/simulationApi";
@@ -29,6 +29,7 @@ function Portfolio() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetSubmitting, setResetSubmitting] = useState(false);
+  const resetInFlightRef = useRef(false);
 
   async function handleSellSuccess({ symbol, quantity, totalValue }) {
     await refreshPortfolio({ showLoading: false });
@@ -43,6 +44,11 @@ function Portfolio() {
   }
 
   async function handleResetSimulation() {
+    if (resetInFlightRef.current) {
+      return;
+    }
+
+    resetInFlightRef.current = true;
     setResetError("");
     setResetSubmitting(true);
 
@@ -54,6 +60,7 @@ function Portfolio() {
     } catch (resetRequestError) {
       setResetError(resetRequestError.message || "Could not reset simulation.");
     } finally {
+      resetInFlightRef.current = false;
       setResetSubmitting(false);
     }
   }

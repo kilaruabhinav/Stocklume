@@ -1,4 +1,4 @@
-const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 const COMPANY_SUFFIXES = new Set([
   "inc",
   "incorporated",
@@ -99,10 +99,12 @@ export async function getNews(ticker, companyName = "") {
     const formatDate = (date) =>
       date.toISOString().split("T")[0];
 
-    const response = await fetch(
-      `https://finnhub.io/api/v1/company-news?symbol=${normalizedTicker}&from=${formatDate(
-        from
-      )}&to=${formatDate(today)}&token=${API_KEY}`
+    const response = await marketRequest(
+      buildMarketApiUrl("/finnhub/company-news", {
+        symbol: normalizedTicker,
+        date_from: formatDate(from),
+        date_to: formatDate(today)
+      })
     );
 
     if (!response.ok) {

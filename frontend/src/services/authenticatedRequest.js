@@ -61,6 +61,10 @@ function getErrorMessage(status, data, fallbackMessage) {
     return data.detail;
   }
 
+  if (status === 429) {
+    return "Too many requests. Please wait a moment and try again.";
+  }
+
   if (status === 0) {
     return "Backend unavailable. Check that the API server is running.";
   }

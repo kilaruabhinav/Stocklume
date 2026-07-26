@@ -1,10 +1,5 @@
 import { getOrSetCachedData } from "../cache/apiCache";
-
-const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY;
-const ALPHA_VANTAGE_API_KEY = import.meta.env.VITE_VINTAGEALPHA_API_KEY;
-
-const FMP_BASE_URL = "https://financialmodelingprep.com/stable";
-const ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query";
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 const FINANCIAL_DETAILS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function getFiniteNumber(value) {
@@ -29,7 +24,7 @@ function sumNumbers(values) {
 }
 
 async function requestJson(url) {
-  const response = await fetch(url);
+  const response = await marketRequest(url);
 
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
@@ -45,21 +40,13 @@ async function requestJson(url) {
 }
 
 function buildFmpUrl(path, params) {
-  const searchParams = new URLSearchParams({
-    ...params,
-    apikey: FMP_API_KEY
-  });
-
-  return `${FMP_BASE_URL}/${path}?${searchParams.toString()}`;
+  return buildMarketApiUrl(`/fmp/${path}`, params);
 }
 
 function buildAlphaUrl(params) {
-  const searchParams = new URLSearchParams({
-    ...params,
-    apikey: ALPHA_VANTAGE_API_KEY
+  return buildMarketApiUrl("/alpha-vantage/income-statement", {
+    symbol: params.symbol
   });
-
-  return `${ALPHA_VANTAGE_BASE_URL}?${searchParams.toString()}`;
 }
 
 function normalizeFmpIncomeStatement(report) {
@@ -165,10 +152,6 @@ function hasFinancialDetails(data) {
 }
 
 async function getFmpFinancials(ticker) {
-  if (!FMP_API_KEY) {
-    return { profile: null, keyMetrics: null, incomeStatements: [] };
-  }
-
   const normalizedTicker = ticker.trim().toUpperCase();
   const [profileResult, keyMetricsResult, incomeResult] = await Promise.allSettled([
     requestJson(buildFmpUrl("profile", { symbol: normalizedTicker })),
@@ -190,10 +173,6 @@ async function getFmpFinancials(ticker) {
 }
 
 async function getAlphaVantageFinancials(ticker) {
-  if (!ALPHA_VANTAGE_API_KEY) {
-    return { incomeStatements: [], ttmIncomeStatement: null };
-  }
-
   const data = await requestJson(buildAlphaUrl({
     function: "INCOME_STATEMENT",
     symbol: ticker.trim().toUpperCase()

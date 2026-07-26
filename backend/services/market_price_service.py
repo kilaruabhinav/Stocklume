@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import ssl
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 PRICE_LOOKUP_ERROR = "Could not fetch current price. Please try again."
 REQUEST_TIMEOUT_SECONDS = 8
 SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+PRICE_QUANTUM = Decimal("0.0001")
 
 
 def get_current_price(symbol: str) -> Decimal:
@@ -31,7 +32,7 @@ def get_current_price(symbol: str) -> Decimal:
     if price is None:
         raise HTTPException(status_code=400, detail=PRICE_LOOKUP_ERROR)
 
-    return price
+    return price.quantize(PRICE_QUANTUM, rounding=ROUND_HALF_UP)
 
 
 def fetch_finnhub_price(symbol: str):

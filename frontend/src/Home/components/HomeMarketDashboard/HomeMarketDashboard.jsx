@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-
-const NEWS_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../../../services/marketApi";
+import { getSafeExternalUrl } from "../../../services/safeExternalUrl";
 
 const indexCards = [
   { label: "S&P 500", value: "6,214.18", move: "+0.42%" },
@@ -275,16 +275,12 @@ function HomeMarketDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!NEWS_API_KEY) {
-      return undefined;
-    }
-
     const controller = new AbortController();
 
     async function loadMarketNews() {
       try {
-        const response = await fetch(
-          `https://finnhub.io/api/v1/news?category=general&token=${NEWS_API_KEY}`,
+        const response = await marketRequest(
+          buildMarketApiUrl("/finnhub/general-news"),
           { signal: controller.signal }
         );
 
@@ -371,8 +367,8 @@ function HomeMarketDashboard() {
                   <time>{item.label}</time>
                 </div>
 
-                {item.url ? (
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
+                {getSafeExternalUrl(item.url) ? (
+                  <a href={getSafeExternalUrl(item.url)} target="_blank" rel="noopener noreferrer">
                     {item.headline}
                   </a>
                 ) : (

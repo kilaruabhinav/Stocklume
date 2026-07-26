@@ -4,6 +4,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from database import get_db_connection
 from schemas.simulation import TradeData
 from services.market_price_service import get_current_price
+from services.rate_limit_service import enforce_user_rate_limit
 from services.simulation_service import (
     buy_simulated_stock as buy_stock,
     ensure_simulation_account,
@@ -24,15 +25,7 @@ security = HTTPBearer()
 
 
 def validate_trade_data(data):
-    symbol = data.symbol.strip().upper()
-
-    if not symbol:
-        raise HTTPException(status_code=400, detail="Symbol is required")
-
-    if data.quantity <= 0:
-        raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
-
-    return symbol, data.quantity
+    return data.symbol, data.quantity
 
 
 @router.get("/simulation/account")
@@ -40,6 +33,7 @@ def get_simulation_account(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -61,6 +55,7 @@ def get_simulation_holdings(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -82,6 +77,7 @@ def get_simulation_trades(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 
@@ -104,6 +100,7 @@ def buy_simulated_stock(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "simulation_buy")
     symbol, quantity = validate_trade_data(data)
     price = get_current_price(symbol)
     mydb = get_db_connection()
@@ -136,6 +133,7 @@ def sell_simulated_stock(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "simulation_sell")
     symbol, quantity = validate_trade_data(data)
     price = get_current_price(symbol)
     mydb = get_db_connection()
@@ -167,6 +165,7 @@ def reset_simulation(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user_id = get_authenticated_user_id(credentials)
+    enforce_user_rate_limit(user_id, "simulation_reset")
     mydb = get_db_connection()
     cursor = mydb.cursor(dictionary=True)
 

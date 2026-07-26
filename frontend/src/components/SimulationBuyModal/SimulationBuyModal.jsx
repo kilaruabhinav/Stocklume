@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buySimulationStock, getSimulationAccount } from "../../services/Simulation/simulationApi";
 import "./SimulationBuyModal.css";
 
@@ -18,6 +18,7 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
   const [cashBalance, setCashBalance] = useState(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState("");
+  const submitInFlightRef = useRef(false);
 
   const symbol = stock?.ticker || stock?.symbol || "";
   const companyName = stock?.comp_name || stock?.companyName || symbol;
@@ -116,6 +117,11 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (submitInFlightRef.current) {
+      return;
+    }
+
     setError("");
 
     if (!symbol) {
@@ -143,6 +149,7 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
       return;
     }
 
+    submitInFlightRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -162,6 +169,7 @@ function SimulationBuyModal({ stock, isOpen, onClose, onSuccess }) {
     } catch (buyError) {
       setError(buyError.message || "Could not complete the buy order.");
     } finally {
+      submitInFlightRef.current = false;
       setIsSubmitting(false);
     }
   }

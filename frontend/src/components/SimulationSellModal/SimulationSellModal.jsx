@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { sellSimulationStock } from "../../services/Simulation/simulationApi";
 import { updateStock } from "../../services/GetStats/updatestockapi";
 import "./SimulationSellModal.css";
@@ -26,6 +26,7 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
   const [priceLoading, setPriceLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitInFlightRef = useRef(false);
 
   const symbol = holding?.symbol || "";
   const ownedQuantity = Number(holding?.quantity);
@@ -113,6 +114,11 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (submitInFlightRef.current) {
+      return;
+    }
+
     setError("");
 
     if (!symbol) {
@@ -130,6 +136,7 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
       return;
     }
 
+    submitInFlightRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -149,6 +156,7 @@ function SimulationSellModal({ holding, isOpen, onClose, onSuccess }) {
     } catch (sellError) {
       setError(sellError.message || "Could not complete the sell order.");
     } finally {
+      submitInFlightRef.current = false;
       setIsSubmitting(false);
     }
   }

@@ -1,6 +1,5 @@
 import { getYahooQuote } from "../GetYahoo/yahooapi";
-
-const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
+import { buildMarketApiUrl, marketRequest } from "../marketApi";
 
 function getFiniteNumber(value) {
   const number = Number(value);
@@ -45,8 +44,8 @@ export async function getStock(ticker, companyNameFallback = "", finnhubSymbol =
     }
 
     for (const symbol of getFinnhubSymbolCandidates(ticker, finnhubSymbol)) {
-      const quoteResponse = await fetch(
-        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`
+      const quoteResponse = await marketRequest(
+        buildMarketApiUrl("/finnhub/quote", { symbol })
       );
 
       if (!quoteResponse.ok) {
@@ -55,8 +54,8 @@ export async function getStock(ticker, companyNameFallback = "", finnhubSymbol =
 
       const quoteData = await quoteResponse.json();
 
-      const profileResponse = await fetch(
-        `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${API_KEY}`
+      const profileResponse = await marketRequest(
+        buildMarketApiUrl("/finnhub/profile", { symbol })
       );
 
       const profileData = profileResponse.ok

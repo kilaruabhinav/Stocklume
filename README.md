@@ -20,7 +20,8 @@ Stocklume is a full-stack stock research and virtual trading platform that lets 
 - Profile account dashboard with account, simulation, watchlist, and recent activity summary
 - Home simulation snapshot
 - Route-level lazy loading/code splitting
-- API caching for company profile and financial details
+- Backend MySQL caching for normal market-data requests
+- Application-level rate limiting
 - Centralized authenticated API request handling
 
 ## v1.1.0 Highlights
@@ -33,7 +34,8 @@ Stocklume is a full-stack stock research and virtual trading platform that lets 
 - Added Simulation Snapshot on Home
 - Added Recent Trades sorting/filtering
 - Added route-level lazy loading to improve bundle size
-- Added API caching for company profile and financial details
+- Added backend market-data caching and backend-only provider credentials
+- Added application-level rate limiting
 - Refactored backend into routes, schemas, services, and utils
 - Refactored Portfolio into components, hooks, and utilities
 - Improved expired-session handling
@@ -55,9 +57,9 @@ Backend:
 - JWT / PyJWT
 - pwdlib[argon2]
 
-Market data APIs:
+Market data providers:
 - Finnhub
-- Yahoo Finance fallback/proxy
+- Yahoo Finance fallback
 - Twelve Data
 - Financial Modeling Prep
 - Alpha Vantage
@@ -72,6 +74,8 @@ backend/
   routes/
   schemas/
   services/
+  migrations/
+  tests/
   utils/
   schema.sql
   requirements.txt
@@ -100,7 +104,7 @@ cp .env.example .env
 uvicorn main:app --reload
 ```
 
-Configure MySQL before starting the backend. The app expects a database with the required auth, watchlist, and simulation tables.
+Configure MySQL and apply `backend/schema.sql` before starting the backend.
 
 ### Frontend
 
@@ -113,43 +117,174 @@ npm run dev
 
 The frontend expects the backend API to be running for login, watchlist, profile, portfolio, and simulation features.
 
-## Environment Variables
+## Deployment
 
-Backend `backend/.env`:
+Stocklume is designed for three separately managed components:
 
-```env
-DB_HOST=localhost
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-JWT_SECRET_KEY=replace_with_a_long_random_secret
-JWT_TOKEN_EXPIRY_MINUTES=30
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-FINNHUB_API_KEY=your_finnhub_api_key
+```text
+Browser
+  -> React/Vite static frontend
+  -> FastAPI backend
+  -> Managed MySQL
+
+FastAPI
+  -> rate limiter
+  -> MySQL api_cache for normal market data
+  -> Finnhub / Yahoo / Twelve Data / FMP / Alpha Vantage
 ```
 
-Frontend `frontend/.env`:
+Simulation execution prices bypass `api_cache` and are validated live by the
+backend before a locked MySQL transaction is committed.
 
-```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
-VITE_FINNHUB_API_KEY=your_finnhub_api_key
-VITE_TWELVEDATA_API_KEY=your_twelvedata_api_key
-VITE_FMP_API_KEY=your_fmp_api_key
-VITE_VINTAGEALPHA_API_KEY=your_alpha_vantage_api_key
+### Production database
+
+For a fresh managed MySQL database:
+
+1. Create an empty MySQL 8-compatible database and restricted application user.
+2. Connect using the provider's secure client or SQL console.
+3. Apply `backend/schema.sql` once. It is the canonical complete schema and
+   creates `users`, `watchlist`, all Simulation tables, and `api_cache` in
+   foreign-key-safe order.
+4. Do not also apply `backend/migrations/001_align_production_schema.sql` to a
+   fresh database.
+
+For an existing development database:
+
+1. Back up the database.
+2. Inspect its columns, indexes, and constraints against `backend/schema.sql`.
+3. Apply `backend/migrations/001_align_production_schema.sql` only when its
+   legacy-to-current changes are needed.
+4. The migration does not create `api_cache`; create that table from the
+   canonical schema if the existing database does not already contain it.
+
+Migrations are intentionally manual. The application does not alter production
+schema during startup.
+
+Managed providers commonly require TLS. `mysql-connector-python` negotiates TLS
+when the server requires it. If the selected provider supplies a custom CA file,
+mount it in the backend service and set `DB_SSL_CA` to its absolute path.
+Stocklume then enables certificate and hostname verification. Never disable
+certificate verification. Provider-specific certificate paths are not hardcoded.
+
+### Production backend
+
+Build command, with the service root set to `backend`:
+
+```bash
+pip install -r requirements.txt
 ```
 
-Do not commit real `.env` files or API keys. Frontend `VITE_*` keys are public in browser builds.
+Start command:
 
-## Database Notes
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
-Required tables:
-- `users`
-- `watchlist`
-- `simulation_accounts`
-- `simulation_holdings`
-- `simulation_trades`
+Local development remains:
 
-`backend/schema.sql` contains the base local schema for `users` and `watchlist`. If setting up a fresh database for v1.1.0, also make sure the simulation tables exist with the columns used by `backend/services/simulation_service.py`.
+```bash
+cd backend
+uvicorn main:app --reload
+```
+
+Required backend variables:
+
+- `DB_HOST`
+- `DB_PORT` (optional; defaults to `3306`)
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `DB_SSL_CA` (optional trusted CA path; enables certificate/hostname checks)
+- `JWT_SECRET_KEY` (required, secret, at least 32 strong characters)
+- `JWT_TOKEN_EXPIRY_MINUTES`
+- `CORS_ALLOWED_ORIGINS` (comma-separated exact frontend origins)
+
+Backend-only market provider variables:
+
+- `FINNHUB_API_KEY` — required for full quote/search/profile/news functionality;
+  Simulation can fall back to live Yahoo pricing if it is absent.
+- `TWELVEDATA_API_KEY` — optional with Yahoo chart fallback.
+- `FMP_API_KEY` — optional, needed for FMP financial details.
+- `ALPHA_VANTAGE_API_KEY` — optional, needed for Alpha Vantage financial details.
+
+Set production CORS to the exact HTTPS frontend origin or origins. Wildcard
+origins are rejected. Do not include URL paths in CORS origins.
+
+`GET /health` is the lightweight process health check. It returns only
+`{"status":"ok"}` and deliberately does not contact MySQL or a paid provider.
+
+FastAPI `/docs`, `/redoc`, and `/openapi.json` remain enabled. They expose the
+public API contract, not environment values or credentials. This is reasonable
+for the current project; a future production policy can disable them at app
+creation if required.
+
+### Reverse proxies and anonymous rate limits
+
+Anonymous limits use FastAPI's `request.client.host`. The application does not
+read `X-Forwarded-For` directly because clients can spoof that header.
+
+Without trusted proxy-header configuration, FastAPI may see the proxy address
+for every visitor, causing them to share one anonymous allowance. Configure the
+hosting platform or Uvicorn to accept proxy headers only from the known proxy
+address range. Never configure forwarded-header trust for every internet source
+unless the backend itself is unreachable except through a trusted proxy.
+
+Application limits are in memory per backend process. Hosting-level controls
+such as a trusted CDN, API gateway, or reverse-proxy rate limit should provide
+coarse global protection.
+
+### Production frontend
+
+Build command, with the service root set to `frontend`:
+
+```bash
+npm ci
+npm run build
+```
+
+Publish directory:
+
+```text
+frontend/dist
+```
+
+Set the public build-time variable:
+
+```env
+VITE_API_BASE_URL=https://your-backend.example
+```
+
+This is the only frontend environment variable. Provider credentials stay in
+FastAPI and must never use a `VITE_` prefix.
+
+The static host must use an SPA fallback:
+
+```text
+all unknown frontend routes -> /index.html
+```
+
+Without this rewrite, direct visits to `/dashboard`, `/compare`, `/portfolio`,
+`/profile`, `/login`, or `/register` may return the host's 404 page.
+
+### Deployment checklist
+
+- [ ] Managed MySQL database created
+- [ ] Restricted database user configured
+- [ ] Fresh schema applied, or existing database migration reviewed and applied
+- [ ] Managed database TLS requirements configured and tested
+- [ ] Backend environment variables configured
+- [ ] Strong production JWT secret configured
+- [ ] Provider keys configured as backend secrets
+- [ ] Exact HTTPS frontend origin configured in CORS
+- [ ] Backend deployed with dynamic `$PORT`
+- [ ] `GET /health` returns HTTP 200
+- [ ] Frontend built with the production `VITE_API_BASE_URL`
+- [ ] Static-host SPA fallback configured
+- [ ] Register, login, logout, and expired-session behavior tested
+- [ ] Dashboard, Compare, Watchlist, and company details tested
+- [ ] Simulation BUY, SELL, partial/full sell, reset, and failure cases tested
+- [ ] Cache hits/misses and rate-limit 429 behavior tested
+- [ ] Light/dark mode and mobile layout tested
 
 ## Useful Commands
 
@@ -165,7 +300,9 @@ Backend syntax check:
 
 ```bash
 cd backend
-python3 -m py_compile main.py database.py security.py routes/*.py schemas/*.py services/*.py utils/*.py
+python -m compileall -q .
+python -m unittest discover -s tests -v
+pip check
 ```
 
 Optional release tag:
@@ -179,14 +316,12 @@ git tag v1.1.0
 - `.env` files should never be committed.
 - JWT protects private routes and backend API endpoints.
 - The backend owns simulation trade execution price lookup so users cannot submit manipulated browser prices.
-- Frontend market-data API keys are visible to users because Vite embeds `VITE_*` variables in the client bundle.
+- Provider API keys are backend-only and are never included in the Vite build.
+- Normal market data is cached; Simulation execution prices deliberately bypass that cache.
+- Application rate limits supplement, but do not replace, infrastructure-level protection.
 
 ## Current Limitations / Future Improvements
 
-- Move more market-data calls backend-side
-- Add deployment configuration
-- Add automated tests
-- Improve chart and market-data caching
 - Add portfolio charts
 - Add password/profile edit support later
 

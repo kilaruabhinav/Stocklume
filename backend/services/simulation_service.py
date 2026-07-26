@@ -1,15 +1,25 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from fastapi import HTTPException
 
 
-def ensure_simulation_account(cursor, user_id):
-    cursor.execute(
-        """
+MONEY_QUANTUM = Decimal("0.01")
+
+
+def ensure_simulation_account(cursor, user_id, for_update=False):
+    select_account_query = """
         SELECT id, user_id, starting_balance, cash_balance, created_at, updated_at
         FROM simulation_accounts
         WHERE user_id = %s
-        """,
+        FOR UPDATE
+        """ if for_update else """
+        SELECT id, user_id, starting_balance, cash_balance, created_at, updated_at
+        FROM simulation_accounts
+        WHERE user_id = %s
+        """
+
+    cursor.execute(
+        select_account_query,
         (user_id,)
     )
 
@@ -20,18 +30,14 @@ def ensure_simulation_account(cursor, user_id):
 
     cursor.execute(
         """
-        INSERT INTO simulation_accounts (user_id)
+        INSERT IGNORE INTO simulation_accounts (user_id)
         VALUES (%s)
         """,
         (user_id,)
     )
 
     cursor.execute(
-        """
-        SELECT id, user_id, starting_balance, cash_balance, created_at, updated_at
-        FROM simulation_accounts
-        WHERE user_id = %s
-        """,
+        select_account_query,
         (user_id,)
     )
 
@@ -67,8 +73,11 @@ def get_simulation_trades(cursor, user_id):
 
 
 def buy_simulated_stock(cursor, user_id, symbol, quantity, price):
-    total_value = quantity * price
-    account = ensure_simulation_account(cursor, user_id)
+    total_value = (quantity * price).quantize(
+        MONEY_QUANTUM,
+        rounding=ROUND_HALF_UP
+    )
+    account = ensure_simulation_account(cursor, user_id, for_update=True)
 
     if account["cash_balance"] < total_value:
         raise HTTPException(
@@ -91,6 +100,7 @@ def buy_simulated_stock(cursor, user_id, symbol, quantity, price):
         FROM simulation_holdings
         WHERE user_id = %s
         AND symbol = %s
+        FOR UPDATE
         """,
         (user_id, symbol)
     )
@@ -126,8 +136,11 @@ def buy_simulated_stock(cursor, user_id, symbol, quantity, price):
 
 
 def sell_simulated_stock(cursor, user_id, symbol, quantity, price):
-    total_value = quantity * price
-    ensure_simulation_account(cursor, user_id)
+    total_value = (quantity * price).quantize(
+        MONEY_QUANTUM,
+        rounding=ROUND_HALF_UP
+    )
+    ensure_simulation_account(cursor, user_id, for_update=True)
 
     cursor.execute(
         """
@@ -135,6 +148,7 @@ def sell_simulated_stock(cursor, user_id, symbol, quantity, price):
         FROM simulation_holdings
         WHERE user_id = %s
         AND symbol = %s
+        FOR UPDATE
         """,
         (user_id, symbol)
     )
@@ -174,28 +188,18 @@ def sell_simulated_stock(cursor, user_id, symbol, quantity, price):
 
 
 def reset_simulation(cursor, user_id):
+    ensure_simulation_account(cursor, user_id, for_update=True)
     cursor.execute("DELETE FROM simulation_holdings WHERE user_id = %s", (user_id,))
     cursor.execute("DELETE FROM simulation_trades WHERE user_id = %s", (user_id,))
-    cursor.execute("SELECT id FROM simulation_accounts WHERE user_id = %s", (user_id,))
-
-    if cursor.fetchone():
-        cursor.execute(
-            """
-            UPDATE simulation_accounts
-            SET starting_balance = %s,
-                cash_balance = %s
-            WHERE user_id = %s
-            """,
-            (Decimal("100000.00"), Decimal("100000.00"), user_id)
-        )
-    else:
-        cursor.execute(
-            """
-            INSERT INTO simulation_accounts (user_id, starting_balance, cash_balance)
-            VALUES (%s, %s, %s)
-            """,
-            (user_id, Decimal("100000.00"), Decimal("100000.00"))
-        )
+    cursor.execute(
+        """
+        UPDATE simulation_accounts
+        SET starting_balance = %s,
+            cash_balance = %s
+        WHERE user_id = %s
+        """,
+        (Decimal("100000.00"), Decimal("100000.00"), user_id)
+    )
 
 
 def insert_trade(cursor, user_id, symbol, trade_type, quantity, price, total_value):
