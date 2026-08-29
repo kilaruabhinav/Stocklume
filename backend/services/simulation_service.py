@@ -30,8 +30,9 @@ def ensure_simulation_account(cursor, user_id, for_update=False):
 
     cursor.execute(
         """
-        INSERT IGNORE INTO simulation_accounts (user_id)
+        INSERT INTO simulation_accounts (user_id)
         VALUES (%s)
+        ON CONFLICT (user_id) DO NOTHING
         """,
         (user_id,)
     )

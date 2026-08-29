@@ -10,6 +10,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_DIR))
 
 from services import api_cache_service
+from psycopg.types.json import Jsonb
 
 
 class FakeCacheDatabase:
@@ -27,8 +28,8 @@ class FakeConnection:
         self.committed = False
         self.rolled_back = False
 
-    def cursor(self, dictionary=False):
-        return FakeCursor(self.database, dictionary)
+    def cursor(self):
+        return FakeCursor(self.database)
 
     def commit(self):
         self.committed = True
@@ -41,14 +42,15 @@ class FakeConnection:
 
 
 class FakeCursor:
-    def __init__(self, database, dictionary):
+    def __init__(self, database):
         self.database = database
-        self.dictionary = dictionary
         self.result = None
         self.rowcount = 0
+        self.last_params = None
 
     def execute(self, query, params):
         normalized_query = " ".join(query.split())
+        self.last_params = params
 
         if normalized_query.startswith("SELECT response_data"):
             row = self.database.rows.get(params[0])
@@ -63,11 +65,19 @@ class FakeCursor:
             return
 
         if normalized_query.startswith("INSERT INTO api_cache"):
+            if "ON CONFLICT (cache_key) DO UPDATE" not in normalized_query:
+                raise AssertionError("Cache writes must use PostgreSQL upserts")
+            if "EXCLUDED.response_data" not in normalized_query:
+                raise AssertionError("Cache upserts must use EXCLUDED values")
+            if "INTERVAL '1 second'" not in normalized_query:
+                raise AssertionError("Cache expiry must use PostgreSQL intervals")
             cache_key, data_type, symbol, response_data, ttl_seconds = params
+            if not isinstance(response_data, Jsonb):
+                raise AssertionError("Cache writes must use psycopg Jsonb")
             self.database.rows[cache_key] = {
                 "data_type": data_type,
                 "symbol": symbol,
-                "response_data": response_data,
+                "response_data": response_data.obj,
                 "expires_at": datetime.now() + timedelta(seconds=ttl_seconds)
             }
             self.rowcount = 1
@@ -77,7 +87,9 @@ class FakeCursor:
             self.rowcount = int(self.database.rows.pop(params[0], None) is not None)
             return
 
-        if normalized_query.startswith("DELETE FROM api_cache"):
+        if normalized_query.startswith("WITH expired_rows AS"):
+            if "ORDER BY expires_at LIMIT %s" not in normalized_query:
+                raise AssertionError("Cache cleanup must retain its row limit")
             now = datetime.now()
             expired_keys = [
                 key
@@ -167,6 +179,18 @@ class ApiCacheServiceTests(unittest.TestCase):
             self.database.rows["profile:AAPL"]["expires_at"],
             first_expiry
         )
+
+    def test_cleanup_uses_a_limited_postgresql_cte(self):
+        self.database.rows["expired"] = {
+            "response_data": {"old": True},
+            "expires_at": datetime.now() - timedelta(seconds=1)
+        }
+        api_cache_service._write_count = 99
+
+        self.assertTrue(api_cache_service.set_cached_value(
+            "quote:AAPL", "quote", "AAPL", {"price": 123}, 30
+        ))
+        self.assertNotIn("expired", self.database.rows)
 
     @patch("services.api_cache_service.set_cached_value", return_value=False)
     @patch("services.api_cache_service.get_cached_value", return_value=None)

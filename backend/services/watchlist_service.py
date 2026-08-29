@@ -30,19 +30,23 @@ def get_watchlist_items(cursor, user_id):
 def add_watchlist_item(cursor, user_id, symbol):
     cursor.execute(
         """
-        INSERT IGNORE INTO watchlist (user_id, symbol)
+        INSERT INTO watchlist (user_id, symbol)
         VALUES (%s, %s)
+        ON CONFLICT (user_id, symbol) DO NOTHING
+        RETURNING id
         """,
         (user_id, symbol)
     )
 
-    if cursor.rowcount == 0:
+    row = cursor.fetchone()
+
+    if row is None:
         raise HTTPException(
             status_code=409,
             detail="Stock already exists in watchlist"
         )
 
-    return cursor.lastrowid
+    return row["id"]
 
 
 def delete_watchlist_item(cursor, user_id, symbol):

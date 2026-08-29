@@ -20,7 +20,7 @@ Stocklume is a full-stack stock research and virtual trading platform that lets 
 - Profile account dashboard with account, simulation, watchlist, and recent activity summary
 - Home simulation snapshot
 - Route-level lazy loading/code splitting
-- Backend MySQL caching for normal market-data requests
+- Backend PostgreSQL caching for normal market-data requests
 - Application-level rate limiting
 - Centralized authenticated API request handling
 
@@ -51,8 +51,8 @@ Frontend:
 
 Backend:
 - FastAPI
-- MySQL
-- mysql-connector-python
+- Supabase PostgreSQL
+- psycopg[binary]
 - Pydantic
 - JWT / PyJWT
 - pwdlib[argon2]
@@ -104,7 +104,8 @@ cp .env.example .env
 uvicorn main:app --reload
 ```
 
-Configure MySQL and apply `backend/schema.sql` before starting the backend.
+Configure PostgreSQL connection variables and apply `backend/schema.sql` to a
+fresh Supabase database before starting the backend.
 
 ### Frontend
 
@@ -125,46 +126,35 @@ Stocklume is designed for three separately managed components:
 Browser
   -> React/Vite static frontend
   -> FastAPI backend
-  -> Managed MySQL
+  -> Supabase PostgreSQL
 
 FastAPI
   -> rate limiter
-  -> MySQL api_cache for normal market data
+  -> PostgreSQL api_cache for normal market data
   -> Finnhub / Yahoo / Twelve Data / FMP / Alpha Vantage
 ```
 
 Simulation execution prices bypass `api_cache` and are validated live by the
-backend before a locked MySQL transaction is committed.
+backend before a locked PostgreSQL transaction is committed.
 
 ### Production database
 
-For a fresh managed MySQL database:
+For a fresh Supabase PostgreSQL database:
 
-1. Create an empty MySQL 8-compatible database and restricted application user.
-2. Connect using the provider's secure client or SQL console.
+1. Create a Supabase project and use its Session Pooler connection settings.
+2. Connect using the Supabase SQL editor or a secure PostgreSQL client.
 3. Apply `backend/schema.sql` once. It is the canonical complete schema and
    creates `users`, `watchlist`, all Simulation tables, and `api_cache` in
    foreign-key-safe order.
 4. Do not also apply `backend/migrations/001_align_production_schema.sql` to a
    fresh database.
 
-For an existing development database:
+The schema is intentionally applied manually; the application does not alter
+production schema at startup. The legacy MySQL alignment migration is retained
+only as a migration note and must not be applied to Supabase.
 
-1. Back up the database.
-2. Inspect its columns, indexes, and constraints against `backend/schema.sql`.
-3. Apply `backend/migrations/001_align_production_schema.sql` only when its
-   legacy-to-current changes are needed.
-4. The migration does not create `api_cache`; create that table from the
-   canonical schema if the existing database does not already contain it.
-
-Migrations are intentionally manual. The application does not alter production
-schema during startup.
-
-Managed providers commonly require TLS. `mysql-connector-python` negotiates TLS
-when the server requires it. If the selected provider supplies a custom CA file,
-mount it in the backend service and set `DB_SSL_CA` to its absolute path.
-Stocklume then enables certificate and hostname verification. Never disable
-certificate verification. Provider-specific certificate paths are not hardcoded.
+The backend connects with PostgreSQL TLS enabled (`sslmode=require`). Use the
+Supabase Session Pooler host and credentials; do not expose them to the frontend.
 
 ### Production backend
 
@@ -190,11 +180,10 @@ uvicorn main:app --reload
 Required backend variables:
 
 - `DB_HOST`
-- `DB_PORT` (optional; defaults to `3306`)
+- `DB_PORT` (optional; defaults to `5432`)
 - `DB_USER`
 - `DB_PASSWORD`
 - `DB_NAME`
-- `DB_SSL_CA` (optional trusted CA path; enables certificate/hostname checks)
 - `JWT_SECRET_KEY` (required, secret, at least 32 strong characters)
 - `JWT_TOKEN_EXPIRY_MINUTES`
 - `CORS_ALLOWED_ORIGINS` (comma-separated exact frontend origins)
@@ -211,7 +200,7 @@ Set production CORS to the exact HTTPS frontend origin or origins. Wildcard
 origins are rejected. Do not include URL paths in CORS origins.
 
 `GET /health` is the lightweight process health check. It returns only
-`{"status":"ok"}` and deliberately does not contact MySQL or a paid provider.
+`{"status":"ok"}` and deliberately does not contact PostgreSQL or a paid provider.
 
 FastAPI `/docs`, `/redoc`, and `/openapi.json` remain enabled. They expose the
 public API contract, not environment values or credentials. This is reasonable
@@ -268,7 +257,7 @@ Without this rewrite, direct visits to `/dashboard`, `/compare`, `/portfolio`,
 
 ### Deployment checklist
 
-- [ ] Managed MySQL database created
+- [ ] Supabase PostgreSQL database created and `backend/schema.sql` applied
 - [ ] Restricted database user configured
 - [ ] Fresh schema applied, or existing database migration reviewed and applied
 - [ ] Managed database TLS requirements configured and tested

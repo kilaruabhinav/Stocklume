@@ -10,7 +10,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_DIR))
 
 from schemas.simulation import TradeData
-from services.simulation_service import buy_simulated_stock
+from services.simulation_service import buy_simulated_stock, sell_simulated_stock
 
 
 class RecordingCursor:
@@ -61,6 +61,37 @@ class SimulationSafetyTests(unittest.TestCase):
 
         self.assertEqual(total, Decimal("10.01"))
         self.assertIn("FOR UPDATE", cursor.queries[0][0])
+        self.assertTrue(
+            any("INSERT INTO simulation_trades" in query for query, _ in cursor.queries)
+        )
+
+    def test_sell_locks_account_and_holding_then_records_trade(self):
+        cursor = RecordingCursor()
+        cursor.results = [
+            {
+                "id": 1,
+                "user_id": 7,
+                "starting_balance": Decimal("100000.00"),
+                "cash_balance": Decimal("99980.00"),
+                "created_at": None,
+                "updated_at": None
+            },
+            {"id": 9, "quantity": Decimal("2.000000"), "average_price": Decimal("10.0000")}
+        ]
+
+        total = sell_simulated_stock(
+            cursor,
+            user_id=7,
+            symbol="AAPL",
+            quantity=Decimal("1.000000"),
+            price=Decimal("10.0050")
+        )
+
+        self.assertEqual(total, Decimal("10.01"))
+        self.assertIn("FOR UPDATE", cursor.queries[0][0])
+        self.assertTrue(
+            any("UPDATE simulation_holdings SET quantity" in query for query, _ in cursor.queries)
+        )
         self.assertTrue(
             any("INSERT INTO simulation_trades" in query for query, _ in cursor.queries)
         )

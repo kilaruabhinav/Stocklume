@@ -1,7 +1,8 @@
 fastapi
 uvicorn
-mysql-connector-python
+psycopg[binary]
 PyJWT
 pwdlib[argon2]
 pydantic
 certifi
+httpx

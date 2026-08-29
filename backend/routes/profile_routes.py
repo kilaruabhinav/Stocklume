@@ -17,7 +17,7 @@ def get_profile(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         cursor.execute(

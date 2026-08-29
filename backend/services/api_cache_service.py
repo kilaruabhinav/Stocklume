@@ -3,6 +3,7 @@ import logging
 import threading
 
 from database import get_db_connection
+from psycopg.types.json import Jsonb
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ def get_cached_value(cache_key):
 
     try:
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor()
         cursor.execute(
             """
             SELECT response_data, expires_at > NOW() AS is_valid
@@ -66,11 +67,6 @@ def set_cached_value(cache_key, data_type, symbol, response_data, ttl_seconds):
     cursor = None
 
     try:
-        serialized_data = json.dumps(
-            response_data,
-            separators=(",", ":"),
-            ensure_ascii=False
-        )
         connection = get_db_connection()
         cursor = connection.cursor()
         cursor.execute(
@@ -84,19 +80,26 @@ def set_cached_value(cache_key, data_type, symbol, response_data, ttl_seconds):
                     fetched_at,
                     expires_at
                 )
-            VALUES (%s, %s, %s, %s, NOW(), DATE_ADD(NOW(), INTERVAL %s SECOND))
-            ON DUPLICATE KEY UPDATE
-                data_type = VALUES(data_type),
-                symbol = VALUES(symbol),
-                response_data = VALUES(response_data),
-                fetched_at = NOW(),
-                expires_at = VALUES(expires_at)
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP + (%s * INTERVAL '1 second')
+            )
+            ON CONFLICT (cache_key) DO UPDATE
+            SET data_type = EXCLUDED.data_type,
+                symbol = EXCLUDED.symbol,
+                response_data = EXCLUDED.response_data,
+                fetched_at = CURRENT_TIMESTAMP,
+                expires_at = EXCLUDED.expires_at
             """,
             (
                 cache_key,
                 data_type,
                 symbol,
-                serialized_data,
+                Jsonb(response_data),
                 ttl_seconds
             )
         )
@@ -104,9 +107,15 @@ def set_cached_value(cache_key, data_type, symbol, response_data, ttl_seconds):
         if should_cleanup_expired_rows():
             cursor.execute(
                 """
+                WITH expired_rows AS (
+                    SELECT id
+                    FROM api_cache
+                    WHERE expires_at < CURRENT_TIMESTAMP
+                    ORDER BY expires_at
+                    LIMIT %s
+                )
                 DELETE FROM api_cache
-                WHERE expires_at < NOW()
-                LIMIT %s
+                WHERE id IN (SELECT id FROM expired_rows)
                 """,
                 (CLEANUP_ROW_LIMIT,)
             )

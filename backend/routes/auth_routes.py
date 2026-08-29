@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from mysql.connector import IntegrityError
+from psycopg.errors import UniqueViolation
 
 from database import get_db_connection
 from schemas.auth import LoginData, RegistrationData
@@ -18,7 +18,7 @@ router = APIRouter()
 def login(data: LoginData, request: Request):
     enforce_client_rate_limit(request, "login")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         cursor.execute(
@@ -53,7 +53,7 @@ def login(data: LoginData, request: Request):
 def register(data: RegistrationData, request: Request):
     enforce_client_rate_limit(request, "register")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         name = data.name
@@ -79,7 +79,7 @@ def register(data: RegistrationData, request: Request):
             "message": "User added successfully"
         }
 
-    except IntegrityError:
+    except UniqueViolation:
         mydb.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
     except Exception:

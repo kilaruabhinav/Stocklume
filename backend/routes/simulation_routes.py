@@ -35,7 +35,7 @@ def get_simulation_account(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         account = ensure_simulation_account(cursor, user_id)
@@ -57,7 +57,7 @@ def get_simulation_holdings(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         return {
@@ -79,7 +79,7 @@ def get_simulation_trades(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         return {
@@ -104,7 +104,7 @@ def buy_simulated_stock(
     symbol, quantity = validate_trade_data(data)
     price = get_current_price(symbol)
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         total_value = buy_stock(cursor, user_id, symbol, quantity, price)
@@ -137,7 +137,7 @@ def sell_simulated_stock(
     symbol, quantity = validate_trade_data(data)
     price = get_current_price(symbol)
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         total_value = sell_stock(cursor, user_id, symbol, quantity, price)
@@ -167,7 +167,7 @@ def reset_simulation(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "simulation_reset")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         reset_simulation_data(cursor, user_id)

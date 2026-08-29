@@ -24,7 +24,7 @@ def get_watchlist(
     user_id = get_authenticated_user_id(credentials)
     enforce_user_rate_limit(user_id, "authenticated_read")
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         return {
@@ -45,7 +45,7 @@ def add_to_watchlist(
     enforce_user_rate_limit(user_id, "authenticated_read")
     symbol = normalize_symbol(data.symbol)
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         watchlist_item_id = add_watchlist_item(cursor, user_id, symbol)
@@ -77,7 +77,7 @@ def delete_from_watchlist(
     enforce_user_rate_limit(user_id, "authenticated_read")
     symbol = normalize_symbol(data.symbol)
     mydb = get_db_connection()
-    cursor = mydb.cursor(dictionary=True)
+    cursor = mydb.cursor()
 
     try:
         delete_watchlist_item(cursor, user_id, symbol)

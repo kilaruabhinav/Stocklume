@@ -232,7 +232,7 @@ export function DashboardHooks() {
     localStorage.setItem("newsCache", JSON.stringify(NewsData));
   }, [NewsData]);
 
-  // Load the user's watchlist from MySQL, then enrich each symbol with live stock data.
+  // Load the user's watchlist through FastAPI, then enrich each symbol with live stock data.
   useEffect(() => {
     let cancelled = false;
 
